@@ -1,0 +1,6 @@
+node_modules/
+.vite/
+# the Wikidata chain's intermediate reads: rebuilt by scripts/wikidata/build-data.mjs
+scripts/wikidata/*.json
+scripts/wikidata/w/*.json
+scripts/wikidata/ev/*.json

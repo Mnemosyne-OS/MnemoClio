@@ -1,0 +1,291 @@
+
+▶ w/fetch.mjs 
+countries 197
+battle x war rows 25285
+regimes 1867
+wars 987 war-in-war links 744
+  19 s
+
+▶ w/polities.mjs 
+ended 591 territories 224
+written 815 with an heir among today's states 65
+  109 s
+
+▶ ./ne.mjs 
+Natural Earth countries 242
+  2 s
+
+▶ w/labels.mjs 
+ids 9442 langs 68
+labelled 9242 batches 189
+  87 s
+
+▶ w/zh.mjs 
+ok
+  123 s
+
+▶ w/labels2.mjs 
+missing labels 653
+labels 9895
+  6 s
+
+▶ w/mulw.mjs 
+mul 84 sur 9895
+  116 s
+
+▶ w/leaders.mjs 
+historical states kept 197 of 493
+inceptions 197
+offices 538
+terms 13050 US 51 open 533
+  20 s
+
+▶ w/leaders-pack.mjs 
+label calls 1
+terms dropped as unknown holders of a well-known office 17
+leaders 13033 open 381 no French name 377
+US George W. Bush 2001-2009 | Barack Obama 2009-2017 | Donald Trump 2017-2021 | Joe Biden 2021-2025 | Donald Trump 2025-?
+  2 s
+
+▶ w/build.mjs 
+periods 112 guerres sacrées -589--337 [2] ; guerres siciliennes -579--264 [5] ; guerres médiques -498--448 [3] ; Guerres romano-latines -497--337 [2] ; guerres du Péloponnèse -459--403 [3] ; guerres samnites -342--289 [3] ; guerres d'Alexandre le Grand -335--322 [2] ; guerres des Diadoques -321--274 [5] ; guerres puniques -263--145 [3] ; guerres de Macédoine -213--147 [5] ; guerres dynastiques séleucides -156--62 [2] ; Q1616064 -87--62 [2] ; guerres romano-parthes -65-217 [5] ; guerres perso-romaines -53-628 [12] ; Wars of Augustus -29-14 [5] ; guerres daciques de Trajan 101-106 [2] ; guerre des Goths 248-700 [10] ; guerres germaniques 248-700 [11] ; guerres perso-byzantines 285-628 [4] ; guerres arméno-sassanides 400-700 [2] ; guerres arabo-byzantines 629-1050 [2] ; guerres entre Byzantins et Bulgares 680-1355 [2] ; Reconquista 722-1492 [2] ; croisade 1095-1291 [16] ; guerres franco-anglaises 1109-1815 [13] ; Croisades baltes 1198-1411 [4] ; conflit entre Capétiens et Plantagenêts 1202-1259 [4] ; conquêtes mongoles 1206-1337 [4] ; guerres d'indépendance de l'Écosse 1296-1357 [2] ; guerres anglo-écossaises 1296-1357 [3] ; guerres polonaises de l'Ordre teutonique 1308-1521 [2] ; guerre de Cent Ans 1337-1453 [6] ; guerres ottomanes en Europe 1354-1683 [22] ; guerre hongro-ottomane 1366-1526 [4] ; guerre vénéto-ottomane 1396-1718 [4] ; Muscovy–Novgorod Wars 1456-1471 [2] ; Ottoman Wars in Asia 1473-1517 [2] ; Guerres lituano-moscovites 1487-1583 [3] ; guerres d'Italie 1494-1559 [6] ; guerres ottomano-persanes 1514-1823 [9] ; guerres indiennes du Mexique 1519-1933 [7] ; guerres de religion en Europe 1524-1697 [22] ; guerres ottomano-habsbourgeoises 1526-1791 [11] ; Ottoman–Portuguese confrontations 1538-1718 [2] ; conflits entre la régence d'Alger et les dynasties chérifiennes 1550-1795 [2] ; Guerres austro-turques 1551-1791 [4] ; Guerre russo-suédoise 1554-1809 [6] ; guerres de Religion en France 1562-1598 [3] ; guerre russo-turque 1568-1918 [9] ; guerre de Quatre-Vingts Ans 1568-1648 [4] ; Guerre suédo-polonaise 1598-1629 [5] ; guerre polono-suédoise 1600-1629 [3] ; guerres indiennes 1609-1924 [30] ; guerre de Trente Ans 1618-1648 [8] ; guerres algéro-tunisiennes 1628-1813 [5] ; guerres polono-turques 1633-1699 [4] ; guerres des Trois Royaumes 1638-1651 [7] ; première révolution anglaise 1642-1651 [3] ; guerres russo-persanes 1651-1828 [3] ; guerres anglo-néerlandaises 1652-1784 [4] ; première guerre du Nord 1655-1660 [3] ; guerre de la Ligue d'Augsbourg 1688-1697 [2] ; guerres intercoloniales 1688-1763 [3] ; guerre de Succession d'Espagne 1701-1714 [4] ; guerre de Succession d'Autriche 1740-1748 [4] ; guerre de Sept Ans 1756-1763 [8] ; guerres du Mysore 1767-1799 [3] ; guerres xhosas 1779-1879 [2] ; guerres de la Révolution française 1792-1802 [13] ; guerres de coalition 1792-1815 [10] ; Première Coalition 1792-1797 [2] ; guerres napoléoniennes 1803-1815 [15] ; Russo-Iranian Wars 1804-1828 [2] ; Guerres d'indépendance hispano-américaines 1808-1833 [10] ; guerres d'independence   latino-américaines 1808-1824 [12] ; Platine Wars 1810-1870 [4] ; Texas–Indian Wars 1820-1882 [5] ; guerres anglo-ashanti 1823-1900 [2] ; guerres anglo-birmanes 1824-1886 [2] ; guerres carlistes 1833-1876 [3] ; guerres anglo-afghanes 1839-1880 [2] ; guerre de l'opium 1839-1860 [2] ; guerres apaches 1849-1924 [2] ; guerres des Sioux 1854-1891 [4] ; guerres balkaniques 1912-1913 [2] ; Première Guerre mondiale 1914-1918 [5] ; guerre civile russe 1917-1922 [3] ; guerre de l'indépendance ukrainienne 1917-1921 [2] ; guerre d'indépendance turque 1919-1923 [3] ; Seconde Guerre mondiale 1939-1945 [10] ; German-Russian wars 1941-1945 [2] ; guerre froide 1945-1991 [28] ; guerres d'Indochine 1946-1989 [5] ; conflit du Cachemire 1947-1999 [2] ; guerre israélo-arabe de 1948 1947-1949 [2] ; troisième guerre d'Indochine 1975-1991 [2] ; guerre froide au Moyen-Orient 1975-2020 [4] ; guerre du Liban 1975-1990 [2] ; guerre d'Afghanistan 1978-2021 [4] ; Conflit par procuration Iran-Israë 1985-2024 [6] ; conflit géorgien-ossète 1989-2008 [2] ; guerres de Yougoslavie 1991-2001 [2] ; guerre civile somalienne 1991-2024 [2] ; guerre contre le terrorisme 2001-2025 [12] ; insurrection islamique au Maghreb 2002-2025 [2] ; Conflit en Irak 2003-2017 [5] ; guerre d'Irak 2003-2011 [4] ; printemps arabe 2010-2012 [11] ; crise libyenne 2011-2020 [2] ; guerre civile syrienne 2011-2024 [9] ; hiver islamiste 2012-2018 [15] ; guerre russo-ukrainienne 2014-2025 [2]
+size 1167908 countries 197 with data 152 wars 869 states 870 items 9164 sans fr 2697
+United States/États-Unis:1195 France/France:1053 España/Espagne:645 Italia/Italie:645 United Kingdom/Royaume-Uni:613 Deutschland/Allemagne:401 Polska/Pologne:399 日本/Japon:397 Türkiye/Turquie:326 Україна/Ukraine:326 Россия/Russie:313 Ελλάδα/Grèce:285
+大日本帝国 | empire du Japon ; 江戸幕府 | shogunat Tokugawa ; 江戸幕府 | shogunat Tokugawa ; 倭国 | Wakoku
+  0 s
+
+▶ ev/astro.mjs 
+classes exclues (astro, île, taxon) 4918 2.527s
+P575 items 36085 hors astro/île/taxon 1933
+Q11344:108 Q35509:101 Q839954:79 Q2232001:57 Q220659:54 Q860861:51 Q24034552:44 Q381885:41 Q18347143:37 Q179700:34 Q10855061:34 Q665247:32 Q1130479:30 Q65943:27 Q113145171:26 Q1640824:26 Q1402592:26 Q755992:26 Q112193867:22 Q11269813:22 Q33837:18 Q55818:18 Q164099:18 Q22675015:18 Q124078422:17 Q8366:16 Q103632:16 Q1293220:16 Q5:16 Q87167:15
+  14 s
+
+▶ ev/fetchall.mjs 
+work2 Q105543609 1184 8.1s
+work2 Q7889 1971 23.0s
+work2 Q5398426 83 2.2s
+work Q3305213 FAIL HTTP 504 upstream request timeout
+work Q7725634 FAIL HTTP 504 upstream request timeout
+work Q8261 0 0.7s
+work Q25379 0 0.4s
+work Q1344 0 0.4s
+work Q207628 0 0.6s
+work Q11424 10635 41.4s
+work Q860861 75 5.4s
+work Q482994 2311 57.2s
+knowledge Q3918 1824 11.1s
+knowledge Q7075 150 6.1s
+knowledge Q33506 1505 3.3s
+knowledge Q207694 962 3.2s
+knowledge Q11032 521 4.5s
+knowledge Q1254933 167 2.8s
+knowledge Q16917 165 14.2s
+knowledge Q5633421 297 3.2s
+knowledge Q5292 0 0.3s
+knowledge Q172754 11 0.3s
+knowledge Q1664720 57 1.0s
+building Q2977 383 2.0s
+building Q16560 307 4.1s
+building Q12280 71 3.6s
+building Q12518 58 2.2s
+building Q11303 711 1.4s
+building Q23413 393 2.9s
+building Q32815 715 4.4s
+building Q44539 46 1.5s
+building Q4989906 258 5.6s
+building Q12323 118 1.8s
+building Q483110 865 5.9s
+building Q12284 35 1.6s
+building Q839954 302 6.1s
+building Q16970 903 26.6s
+treaty Q131569 1157 2.5s
+treaty Q625298 440 0.8s
+treaty Q7755 233 0.9s
+treaty Q1464916 61 1.0s
+treaty Q1219394 56 0.6s
+disaster Q7944 664 5.3s
+disaster Q44512 34 0.7s
+disaster Q12184 19 0.5s
+disaster Q168247 57 0.7s
+disaster Q8065 338 1.1s
+disaster Q8070 16 0.4s
+disaster Q3839081 363 1.7s
+disaster Q168983 101 1.0s
+exploration Q2401485 63 0.5s
+exploration Q752783 365 1.0s
+exploration Q2133344 65 0.8s
+society Q10931 92 0.8s
+society Q124734 451 2.4s
+society Q45382 226 0.9s
+society Q49776 45 0.8s
+society Q273120 259 3.5s
+society Q175331 129 2.1s
+society Q49773 144 0.7s
+movement Q968159 83 0.5s
+movement Q1826286 24 0.5s
+  1116 s
+
+▶ ev/work2step.mjs 
+Q3305213 candidats 445 datés gardés 366 25s
+Q7725634 candidats 2288 datés gardés 1877 18s
+proust [ '1906-01-01T00:00:00Z' ] total 15264
+  44 s
+
+▶ ev/fetchmore.mjs 
+subdivision 1599 3.8s
+election 4791 7.8s
+law 1716 13.4s
+city 1622 1.8s
+company 4009 58.3s
+violence 109 0.8s
+violence 601 2.5s
+violence 124 0.8s
+violence 1344 2.1s
+  91 s
+
+▶ ev/sport.mjs 
+111 {
+  Q19317: 40,
+  Q135976384: 33,
+  Q137592217: 27,
+  Q106043413: 10,
+  Q33881: 1
+}
+  2 s
+
+▶ ev/person.mjs 
+-3500 853 1.6s
+-1000 648 2.5s
+-500 1326 1.2s
+-250 1413 1.4s
+0 1337 1.3s
+250 1423 1.0s
+500 176 1.5s
+750 191 1.7s
+1000 154 1.1s
+1150 183 1.1s
+1300 186 4.6s
+1450 63 1.1s
+1475 87 1.5s
+1500 69 2.6s
+1525 59 2.2s
+1550 64 6.4s
+1575 68 4.8s
+1600 62 2.0s
+1625 80 2.0s
+1650 57 4.8s
+1675 70 14.1s
+1700 88 1.6s
+1725 148 14.3s
+1750 184 2.4s
+1775 222 4.1s
+1800 334 15.3s
+1825 391 36.4s
+1850 647 50.1s
+1875 1010 39.2s
+1900 1428 46.0s
+1925 431 10.1s
+1930 442 6.7s
+1935 406 13.9s
+1940 525 21.6s
+1945 556 113.9s
+1950 FAIL HTTP 504 upstream request timeout
+1950 2751 463.8s
+1975 588 47.5s
+1980 640 17.0s
+1985 663 11.5s
+1990 463 36.4s
+1995 312 8.4s
+2000 137 15.1s
+births at year precision 16653 approximate before 500 3975 of 20935
+  1120 s
+
+▶ ev/disc.mjs 
+discoveries 1782
+valeurs pays 1113 hors 197 916
+round 0 resolved 326 still 324
+round 1 resolved 426 still 207
+round 2 resolved 460 still 162
+round 3 resolved 485 still 135
+  12 s
+
+▶ ev/events.mjs 
+events 60901 {"discovery":{"kept":1782,"total":1782,"minSl":8},"person":{"kept":18725,"total":20586,"minSl":10},"work":{"kept":9188,"total":9188,"minSl":18},"knowledge":{"kept":5465,"total":5465,"minSl":8},"building":{"kept":4985,"total":4985,"minSl":10},"treaty":{"kept":1929,"total":1929,"minSl":3},"disaster":{"kept":987,"total":987,"minSl":5},"exploration":{"kept":480,"total":480,"minSl":4},"society":{"kept":1278,"total":1278,"minSl":6},"movement":{"kept":107,"total":107,"minSl":8},"sport":{"kept":111,"total":111,"minSl":1},"subdivision":{"kept":1599,"total":1599,"minSl":2},"election":{"kept":4791,"total":4791,"minSl":5},"law":{"kept":1716,"total":1716,"minSl":4},"city":{"kept":1622,"total":1622,"minSl":10},"company":{"kept":4009,"total":4009,"minSl":15},"violence":{"kept":2127,"total":2127,"minSl":3}}
+label calls 183
+calls ok 183 labelled 63343
+  24 s
+
+▶ ev/fill.mjs 
+missing 53
+still 52
+  2 s
+
+▶ ev/p27.mjs 
+à résoudre 23911
+changés 5819 sans pays 7159 {"discovery":441,"person":3459,"work":1664,"knowledge":53,"building":4,"treaty":394,"disaster":99,"exploration":288,"society":171,"movement":43,"sport":18,"election":80,"law":380,"city":3,"company":23,"violence":39}
+Q937 Q183
+Q7199 Q142
+Q5582 Q29999
+Q1035 Q145
+Q91 Q30
+  87 s
+
+▶ ev/relabel.mjs 
+appels 80
+ok 80
+  13 s
+
+▶ ev/refr.mjs 
+sans fr à vérifier 345
+vraiment sans fr 345
+  4 s
+
+▶ ev/mul.mjs 
+avec mul 830 sur 6771
+  82 s
+
+▶ ev/pack.mjs 
+events 60875 no label 26 no fr 4612 size 5196969
+{
+  discovery: [ 1782, 441, 149 ],
+  person: [ 18725, 3459, 343 ],
+  work: [ 9188, 1664, 23 ],
+  knowledge: [ 5465, 53, 722 ],
+  building: [ 4985, 4, 714 ],
+  treaty: [ 1915, 385, 448 ],
+  disaster: [ 986, 99, 354 ],
+  exploration: [ 480, 288, 34 ],
+  society: [ 1277, 170, 263 ],
+  movement: [ 107, 43, 4 ],
+  sport: [ 111, 18, 1 ],
+  subdivision: [ 1599, 0, 40 ],
+  election: [ 4791, 80, 758 ],
+  law: [ 1706, 371, 450 ],
+  city: [ 1622, 3, 3 ],
+  company: [ 4009, 23, 10 ],
+  violence: [ 2127, 39, 296 ]
+}
+  0 s
+
+▶ ./split.mjs 
+public/data: 19 files, 10.55 MB, read 2026-10-06
+  history.json                   3199 kB
+  events-person.json             1348 kB  18725
+  events-discovery.json           210 kB  1782
+  events-work.json                733 kB  9188
+  events-knowledge.json           563 kB  5465
+  events-building.json            493 kB  4985
+  events-treaty.json              255 kB  1915
+  events-disaster.json            171 kB  986
+  events-exploration.json         114 kB  480
+  events-society.json             195 kB  1277
+  events-movement.json             90 kB  107
+  events-sport.json                95 kB  111
+  events-subdivision.json         195 kB  1599
+  events-election.json            631 kB  4791
+  events-law.json                 235 kB  1706
+  events-city.json                176 kB  1622
+  events-company.json             341 kB  4009
+  events-violence.json            279 kB  2127
+  world-today.json               1231 kB
+  0 s

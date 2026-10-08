@@ -16,10 +16,40 @@ export interface Theme {
   dark: boolean;
   /** Lightness to draw subject and country hues at, so they read on this background. */
   l: number;
+  /** The map's sea, unclaimed land and borders; text on an accent pill; a lane's faint band. */
+  ocean: string;
+  land: string;
+  border: string;
+  onAccent: string;
+  laneTint: string;
 }
+
+/** The canvas colours the shell does not broadcast, per mode; a page may set --clio-ocean etc. to change them. */
+const CANVAS = {
+  dark: { ocean: '#0b1220', land: '#1b2333', border: 'rgba(255,255,255,0.12)', onAccent: '#0b0d12', laneTint: 'rgba(255,255,255,0.025)' },
+  light: { ocean: '#dfe8f3', land: '#f5f2ea', border: 'rgba(0,0,0,0.18)', onAccent: '#ffffff', laneTint: 'rgba(0,0,0,0.025)' },
+};
 
 const FALLBACK = { bg: '#07090d', panel: '#10141c', text: '#e6e8ee', muted: '#8a93a6', line: '#232a37', accent: '#8b7cff' };
 
+/**
+ * A theme with every field, whatever it was made from. 🪤 A canvas whose `fillStyle` is set to
+ * `undefined` KEEPS the previous colour: a theme object made before a field existed (kept across a
+ * hot reload, or sent by an older host) painted the whole timeline lane with the last colour used —
+ * the gutter's white text, or the last dot's violet or green, flashing as it played (field, 07/10).
+ * The canvases draw with this, never with the raw object.
+ */
+export function completeTheme(t: Partial<Theme>): Theme {
+  const dark = t.dark ?? true;
+  const k = CANVAS[dark ? 'dark' : 'light'];
+  return {
+    bg: t.bg ?? FALLBACK.bg, panel: t.panel ?? FALLBACK.panel, text: t.text ?? FALLBACK.text, muted: t.muted ?? FALLBACK.muted,
+    line: t.line ?? FALLBACK.line, accent: t.accent ?? FALLBACK.accent, dark, l: t.l ?? (dark ? 64 : 42),
+    ocean: t.ocean ?? k.ocean, land: t.land ?? k.land, border: t.border ?? k.border, onAccent: t.onAccent ?? k.onAccent, laneTint: t.laneTint ?? k.laneTint,
+  };
+}
+
+/** The host's colours (and the canvas's own, per mode), read now: called again when the shell changes theme. */
 export function readTheme(el: Element = document.documentElement): Theme {
   const css = getComputedStyle(el);
   const v = (name: string, fb: string) => css.getPropertyValue(name).trim() || fb;
@@ -34,6 +64,11 @@ export function readTheme(el: Element = document.documentElement): Theme {
     accent: v('--accent', FALLBACK.accent),
     dark,
     l: dark ? 64 : 42,
+    ocean: v('--clio-ocean', CANVAS[dark ? 'dark' : 'light'].ocean),
+    land: v('--clio-land', CANVAS[dark ? 'dark' : 'light'].land),
+    border: v('--clio-border', CANVAS[dark ? 'dark' : 'light'].border),
+    onAccent: v('--clio-on-accent', CANVAS[dark ? 'dark' : 'light'].onAccent),
+    laneTint: v('--clio-lane-tint', CANVAS[dark ? 'dark' : 'light'].laneTint),
   };
 }
 

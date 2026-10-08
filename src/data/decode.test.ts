@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { LAST_YEAR, crossed, decodeEvents, decodeHistory, firstAtOrAfter, hueOf, uniqueByQ } from './decode';
-import { eraFor, polityNameIndex, shapesFrom, simplify, ERA_YEARS } from './era';
+import { eraFor, namesCountry, polityNameIndex, shapesFrom, simplify, ERA_YEARS } from './era';
 
 const countries = [
-  { id: 'Q142', lang: 'fr', o: 'France', ol: 'fr', f: 'France', n: 1053, h: 0, s: 843, kind: 'state' as const, e: null, en: 'France' },
-  { id: 'Q17', lang: 'ja', o: '日本', ol: 'ja', f: 'Japon', n: 397, h: 137, s: null, kind: 'state' as const, e: null, en: 'Japan' },
+  { id: 'Q142', lang: 'fr', o: 'France', ol: 'fr', f: 'France', n: 1053, h: 0, s: 843, kind: 'state' as const, e: null, en: 'France', nl: {} },
+  { id: 'Q17', lang: 'ja', o: '日本', ol: 'ja', f: 'Japon', n: 397, h: 137, s: null, kind: 'state' as const, e: null, en: 'Japan', nl: {} },
 ];
 
 describe('decodeEvents', () => {
@@ -91,7 +91,7 @@ describe('an ended state on the era map', () => {
 });
 
 describe('ended states and territories', () => {
-  const withOttoman = [...countries, { id: 'Q12560', lang: 'ota', o: 'دولت عليه عثمانیه', ol: 'ota', f: 'Empire ottoman', n: 0, h: 274, s: 1299, kind: 'ended' as const, e: 1922, en: 'Ottoman Empire' }];
+  const withOttoman = [...countries, { id: 'Q12560', lang: 'ota', o: 'دولت عليه عثمانیه', ol: 'ota', f: 'Empire ottoman', n: 0, h: 274, s: 1299, kind: 'ended' as const, e: 1922, en: 'Ottoman Empire', nl: {} }];
   it('an event keeps the polity Wikidata ties it to directly, beside the country it resolved to', () => {
     const { events } = decodeEvents({ kind: 'violence', langs: ['en'], subs: [], rows: [
       [1683, 0, null, null, 40, 'Battle', 0, 0, -1, 1, 2],
@@ -190,5 +190,20 @@ describe('approximate dates', () => {
       [-300, -1, null, null, 20, 'Odd value', 0, 0, -1, 3, -1, 2],
     ] }, countries);
     expect(events.map((e) => e.a ?? false)).toEqual([true, false, false]);
+  });
+});
+
+describe('a map of the time on the land of a shown country', () => {
+  it('colours a shape only when its name names the country', () => {
+    const us = ['United States of America', 'United States', 'États-Unis'];
+    expect(namesCountry('United States of America', us)).toBe(true);
+    expect(namesCountry('Cherokee', us)).toBe(false);
+    expect(namesCountry('Ho-de-no-sau-nee-ga (Haudenosaunee)', us)).toBe(false);
+    expect(namesCountry('Empire of Japan', ['Japan', '日本'])).toBe(true);
+    expect(namesCountry('Roman Empire', ['France'])).toBe(false);
+  });
+
+  it('ignores a missing name and a name too short to mean anything', () => {
+    expect(namesCountry('Sultanate of Oman', [null, undefined, 'Om'])).toBe(false);
   });
 });

@@ -17,12 +17,12 @@ import { placeLabels, rowOf } from '../engine/labels';
 import { layoutLanes, packRows, BAND_H, LEADER_H, type Lane, type LaneSpec } from '../engine/lanes';
 import { KIND_HUE, hsl, kindColor } from '../engine/palette';
 import type { Scene, Picked } from '../engine/scene';
-import type { Theme } from '../engine/theme';
-import { levelOf, panBy, span, tickStep, xToYear, yearToX, zoomAt, type Level, type View } from '../engine/view';
+import { completeTheme, type Theme } from '../engine/theme';
+import { BOUNDS, CENTRE, centreOn, levelOf, panBy, span, tickStep, xToYear, yearToX, zoomAt, type Level, type View } from '../engine/view';
 import { bucketYears, fey, fspan, fy } from '../engine/years';
 import { drawDot } from '../engine/dot';
 
-export const GUTTER = 132;
+const GUTTER = 132;
 const RULER_H = 30;
 /** How many events the play cursor may light in one frame: a fast play over a dense decade must not flood the screen. */
 const SPARKS_PER_FRAME = 4;
@@ -46,10 +46,13 @@ export interface TimelineProps {
   onPick: (p: Picked) => void;
   /** A frame's names that have no French label, for the translation notice. */
   onUntranslated?: (n: number) => void;
+  /** Has this item a name in the person's language (for the count of those that have none)? */
+  translated: (x: Named) => boolean;
 }
 
 interface Hit { x: number; y: number; r: number; pick: Picked; tip: string }
 
+/** The timeline: one lane per country, the fixed cursor in the middle, every gesture moving the view under it. */
 export function Timeline(p: TimelineProps) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const rulerRef = useRef<HTMLCanvasElement>(null);
@@ -148,7 +151,7 @@ export function Timeline(p: TimelineProps) {
     const { lanes, height } = layoutLanes(ix.specs, level);
     if (Math.abs(height - contentHRef.current) > 1) { contentHRef.current = height; setContentH(height); }
     const X = (year: number) => GUTTER + yearToX(v, tw, year);
-    const th = P.theme;
+    const th = completeTheme(P.theme);
     const ctx = canvas.getContext('2d')!;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, W, H);
@@ -159,7 +162,7 @@ export function Timeline(p: TimelineProps) {
     const prevPos = posRef.current;
     const placedPos = new Map<string, { x: number; y: number; r: number; color: string; hollow: boolean }>();
     let untranslated = 0;
-    const nm = (x: Named) => { if (!x.f) untranslated++; return P.name(x); };
+    const nm = (x: Named) => { if (!P.translated(x)) untranslated++; return P.name(x); };
 
     // decade grid
     const step = tickStep(v, tw);
@@ -175,7 +178,7 @@ export function Timeline(p: TimelineProps) {
     for (const lane of lanes) {
       const ly = lane.y - top;
       if (ly > H || ly + lane.h < 0) continue;
-      ctx.fillStyle = th.dark ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.025)';
+      ctx.fillStyle = th.laneTint;
       ctx.fillRect(GUTTER, ly, tw, lane.h);
       drawLane(ctx, lane, ly, now);
     }
@@ -224,7 +227,7 @@ export function Timeline(p: TimelineProps) {
     rc.clearRect(0, 0, W, RULER_H);
     rc.fillStyle = th.bg; rc.fillRect(0, 0, W, RULER_H);
     rc.font = '12px system-ui, sans-serif'; rc.textBaseline = 'middle'; rc.textAlign = 'center';
-    for (let y = Math.ceil(v.y0 / step) * step; y <= v.y1; y += step) {
+    for (let y = Math.ceil(Math.max(v.y0, BOUNDS.min) / step) * step; y <= Math.min(v.y1, CENTRE.max); y += step) {
       const x = X(y);
       if (x < GUTTER + 12) continue;
       rc.fillStyle = y % (step * 5) === 0 ? th.text : th.muted;
@@ -237,7 +240,7 @@ export function Timeline(p: TimelineProps) {
     const bw = rc.measureText(label).width + 16;
     rc.fillStyle = th.accent;
     roundRect(rc, cx - bw / 2, 3, bw, RULER_H - 8, 8); rc.fill();
-    rc.fillStyle = th.dark ? '#0b0d12' : '#ffffff';
+    rc.fillStyle = th.onAccent;
     rc.fillText(label, cx, RULER_H / 2 - 1);
     rc.textAlign = 'left';
 
@@ -420,7 +423,7 @@ export function Timeline(p: TimelineProps) {
       if (dashed) { c.setLineDash([3, 3]); c.strokeStyle = color; c.lineWidth = 1; roundRect(c, a, y, Math.max(3, b - a), BAND_H, 6); c.stroke(); c.setLineDash([]); }
       if (b - a > 40) {
         c.font = '11px system-ui, sans-serif'; c.textBaseline = 'middle';
-        c.fillStyle = dashed ? th.text : '#ffffff';
+        c.fillStyle = dashed ? th.text : th.onAccent;
         c.fillText(ellipsize(c, label, b - a - 10), a + 6, y + BAND_H / 2 + 0.5);
       }
       newHits.push({ x: (a + b) / 2, y: y + top + BAND_H / 2, r: Math.max(8, (b - a) / 2), pick, tip: tipText });
@@ -435,15 +438,18 @@ export function Timeline(p: TimelineProps) {
     const scene = p.scene;
     let raf = 0;
     let last = performance.now();
+    // the cursor at the last frame, not at this frame's start: in a window whose play clock runs
+    // elsewhere (the exploded view), the cursor moves BETWEEN frames and nothing would be lit
+    let prev = scene.cursor;
     const frame = (now: number) => {
       raf = 0;
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
-      const before = scene.cursor;
+      const before = prev;
       const moving = scene.step(dt);
       // the play cursor lights what it passes; a jump (a click far away) lights nothing
       const after = scene.cursor;
-      if (after > before && after - before < 30) {
+      if (scene.playing && after > before && after - before < 30) {
         const passed = crossed(indexRef.current.ignitable, before, after).slice(0, SPARKS_PER_FRAME);
         if (passed.length) {
           const qs: string[] = [];
@@ -455,6 +461,7 @@ export function Timeline(p: TimelineProps) {
           scene.addSparks(qs, now);
         }
       }
+      prev = after;
       draw(now);
       if (moving || arrivals.busy(now) || ripples.current.length) raf = requestAnimationFrame(frame);
     };
@@ -485,14 +492,12 @@ export function Timeline(p: TimelineProps) {
       const r = canvas.getBoundingClientRect();
       return xToYear(scene.view, scene.width, clientX - r.left - GUTTER);
     };
-    let drag: null | { x: number; y: number; view: View; scroll: number; moved: number; samples: Array<[number, number]>; mode: 'pan' | 'cursor' } = null;
+    // the cursor never moves on screen: every drag moves the timeline under it
+    let drag: null | { x: number; y: number; view: View; scroll: number; moved: number; samples: Array<[number, number]> } = null;
 
     const down = (ev: PointerEvent) => {
       if (ev.button !== 0) return;
-      const r = canvas.getBoundingClientRect();
-      const cx = GUTTER + yearToX(scene.view, scene.width, scene.cursor);
-      const mode = Math.abs(ev.clientX - r.left - cx) < 7 ? 'cursor' : 'pan';
-      drag = { x: ev.clientX, y: ev.clientY, view: scene.view, scroll: sc.scrollTop, moved: 0, samples: [[performance.now(), ev.clientX]], mode };
+      drag = { x: ev.clientX, y: ev.clientY, view: scene.view, scroll: sc.scrollTop, moved: 0, samples: [[performance.now(), ev.clientX]] };
       scene.velocity = 0;
       canvas.setPointerCapture(ev.pointerId);
     };
@@ -500,7 +505,6 @@ export function Timeline(p: TimelineProps) {
       if (!drag) { hover(ev); return; }
       const dx = ev.clientX - drag.x, dy = ev.clientY - drag.y;
       drag.moved = Math.max(drag.moved, Math.hypot(dx, dy));
-      if (drag.mode === 'cursor') { scene.setCursor(yearAt(ev.clientX)); return; }
       scene.dragTo(panBy(drag.view, -dx * span(drag.view) / scene.width));
       sc.scrollTop = drag.scroll - dy;
       drag.samples.push([performance.now(), ev.clientX]);
@@ -511,8 +515,8 @@ export function Timeline(p: TimelineProps) {
       const d = drag;
       drag = null;
       if (canvas.hasPointerCapture(ev.pointerId)) canvas.releasePointerCapture(ev.pointerId);
-      if (d.moved < 4 && d.mode === 'pan') { click(ev); return; }
-      if (d.mode === 'pan' && !props.current.reduceMotion) {
+      if (d.moved < 4) { click(ev); return; }
+      if (!props.current.reduceMotion) {
         const [t0, x0] = d.samples[0]!, [t1, x1] = d.samples[d.samples.length - 1]!;
         const dt = (t1 - t0) / 1000;
         if (dt > 0 && performance.now() - t1 < 80) scene.fling(-((x1 - x0) / dt) * span(scene.view) / scene.width);
@@ -528,31 +532,45 @@ export function Timeline(p: TimelineProps) {
       }
       return best;
     };
+    // a click on empty space brings that year under the cursor
     const click = (ev: MouseEvent) => {
       const h = hit(ev);
       if (h) props.current.onPick(h.pick);
-      else scene.setCursor(yearAt(ev.clientX));
+      else { scene.setLoop(null); scene.goTo(yearAt(ev.clientX), props.current.reduceMotion); }
     };
     const hover = (ev: PointerEvent) => {
       const h = hit(ev);
       const r = canvas.getBoundingClientRect();
       setTip(h ? { x: ev.clientX - r.left, y: ev.clientY - r.top, text: h.tip } : null);
-      canvas.style.cursor = h ? 'pointer' : Math.abs(ev.clientX - r.left - (GUTTER + yearToX(scene.view, scene.width, scene.cursor))) < 7 ? 'ew-resize' : 'grab';
+      canvas.style.cursor = h ? 'pointer' : 'grab';
     };
     const wheel = (ev: WheelEvent) => {
+      // Ctrl (⌘) + wheel belongs to the board: untouched, the shell turns it into a zoom of the
+      // canvas. Taken here, a board filled with MnemoClio's windows left no way to zoom out
+      // (field, 08/10: « otherwise we can be stuck »). A trackpad pinch arrives the same way.
+      if (ev.ctrlKey || ev.metaKey) return;
       ev.preventDefault();
       if (Math.abs(ev.deltaX) > Math.abs(ev.deltaY)) { scene.setTarget(panBy(scene.target, ev.deltaX * span(scene.target) / scene.width)); return; }
       if (ev.shiftKey) { sc.scrollTop += ev.deltaY; return; }
-      const factor = Math.exp(ev.deltaY * (ev.ctrlKey ? 0.01 : 0.0016));
-      scene.setTarget(zoomAt(scene.target, yearAt(ev.clientX), factor), props.current.reduceMotion);
+      const factor = Math.exp(ev.deltaY * 0.0016);
+      // zoom around the fixed cursor: the year it shows does not change
+      scene.setTarget(zoomAt(scene.target, (scene.target.y0 + scene.target.y1) / 2, factor), props.current.reduceMotion);
     };
-    const dbl = (ev: MouseEvent) => { if (!hit(ev)) scene.setTarget(zoomAt(scene.target, yearAt(ev.clientX), 0.35), props.current.reduceMotion); };
+    const dbl = (ev: MouseEvent) => { if (!hit(ev)) scene.setTarget(centreOn(yearAt(ev.clientX), span(scene.target) * 0.35), props.current.reduceMotion); };
     const leave = () => setTip(null);
+    // the ruler: a press brings that year under the cursor, a drag moves the timeline like the canvas
     const rulerDown = (ev: PointerEvent) => {
-      const set = (e: PointerEvent) => scene.setCursor(yearAt(e.clientX));
-      set(ev);
-      const mv = (e: PointerEvent) => set(e);
-      const end = () => { window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', end); };
+      const x0 = ev.clientX, view0 = scene.view;
+      let moved = false;
+      scene.velocity = 0;
+      const mv = (e: PointerEvent) => {
+        if (Math.abs(e.clientX - x0) > 3) moved = true;
+        if (moved) scene.dragTo(panBy(view0, -(e.clientX - x0) * span(view0) / scene.width));
+      };
+      const end = (e: PointerEvent) => {
+        window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', end);
+        if (!moved) { scene.setLoop(null); scene.goTo(yearAt(e.clientX), props.current.reduceMotion); }
+      };
       window.addEventListener('pointermove', mv);
       window.addEventListener('pointerup', end);
     };

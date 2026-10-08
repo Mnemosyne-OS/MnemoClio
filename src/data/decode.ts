@@ -11,7 +11,7 @@ import type { Battle, Country, Ev, History, Kind, Leader, Named, Office, Period,
 /** The last year the timeline reaches; an open regime is drawn up to here. */
 export const LAST_YEAR = 2025;
 
-interface RawCountry { id: string; lang: string | null; o: string; ol: string; f: string | null; n: number; s?: number | null; kind?: 'state' | 'ended' | 'territory'; e?: number | null; en?: string | null }
+interface RawCountry { id: string; lang: string | null; o: string; ol: string; f: string | null; n: number; s?: number | null; kind?: 'state' | 'ended' | 'territory'; e?: number | null; en?: string | null; nl?: Record<string, string> }
 interface RawRegime { id: string; c: string; s: number; e: number | null; next: string | null; nl: Named | null; o: string; ol: string; f: string | null }
 interface RawWar { id: string; c: string; s: number; e: number; o: string; ol: string; f: string | null; groups: Record<string, Named>; b: Battle[] }
 interface RawHistory { countries: RawCountry[]; wars: RawWar[]; states: RawRegime[]; periods: Period[]; leaders?: Array<Omit<Leader, 'c' | 'h'> & { c?: string | null; h?: string | null }>; offices?: Office[] }
@@ -20,7 +20,7 @@ interface RawHistory { countries: RawCountry[]; wars: RawWar[]; states: RawRegim
 export const hueOf = (index: number): number => Math.round((index * 137.508) % 360);
 
 export function decodeHistory(raw: RawHistory): History {
-  const countries: Country[] = raw.countries.map((c, i) => ({ ...c, f: c.f ?? null, h: hueOf(i), s: typeof c.s === 'number' ? c.s : null, kind: c.kind ?? 'state', e: typeof c.e === 'number' ? c.e : null, en: c.en ?? null }));
+  const countries: Country[] = raw.countries.map((c, i) => ({ ...c, f: c.f ?? null, h: hueOf(i), s: typeof c.s === 'number' ? c.s : null, kind: c.kind ?? 'state', e: typeof c.e === 'number' ? c.e : null, en: c.en ?? null, nl: c.nl && typeof c.nl === 'object' ? c.nl : {} }));
   const regimes: Regime[] = raw.states.map((s) => ({ ...s, f: s.f ?? null, e: s.e ?? NaN, open: false }));
   for (const r of regimes) {
     if (Number.isNaN(r.e)) {

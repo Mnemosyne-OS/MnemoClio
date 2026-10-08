@@ -34,6 +34,7 @@ if (!process.argv.includes('--split')) {
   run('w', 'leaders.mjs');
   run('w', 'leaders-pack.mjs');
   run('w', 'build.mjs');
+  run('w', 'country-langs.mjs');
   // 2. every other subject
   run('ev', 'astro.mjs');
   run('ev', 'fetchall.mjs');
@@ -49,6 +50,16 @@ if (!process.argv.includes('--split')) {
   run('ev', 'refr.mjs');
   run('ev', 'mul.mjs');
   run('ev', 'pack.mjs');
+  run('w', 'names-langs.mjs');
 }
 // 3. what the cartridge loads
 run('.', 'split.mjs');
+
+// 4. how many people lived there (Our World in Data, not Wikidata): reads the history split wrote
+run('../population', 'pop.mjs');
+
+// 5. outbreaks where Wikidata places them: dated foci, never an invented spread
+run('../epidemics', 'epi.mjs');
+
+// 6. where religions built and when their currents were founded (doc 137 section 5quaterdecies)
+run('../religions', 'rel.mjs');

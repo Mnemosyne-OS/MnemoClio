@@ -1,8 +1,9 @@
 {
   "name": "@mnemosyne-plugins/mnemo-clio",
   "displayName": "MnemoClio",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "category": "Memory",
+  "icon": "icon.svg",
   "vendor": "Mnemosyne Labs",
   "license": "MIT",
   "description": "The history of every country on one timeline you can move. Drag it, zoom from five centuries to five years, press play and watch the world happen: regimes, wars and their battles, births, works, discoveries, schools and museums, buildings, treaties, revolts, disasters, explorations and sport, for 197 countries, each name in its own language. Data read from Wikidata (CC0); today's borders from Natural Earth (public domain).",
@@ -20,11 +21,52 @@
     "countries",
     "education"
   ],
-  "permissions": [],
+  "permissions": [
+    "cockpit:pin",
+    "vault:write"
+  ],
   "updateStrategy": "git",
   "entrypoints": {
     "renderer": "index.html"
   },
+  "boards": [
+    {
+      "id": "exploded",
+      "name": "Exploded view",
+      "nameI18n": {
+        "fr": "Vue éclatée",
+        "es": "Vista separada",
+        "de": "Explosionsansicht",
+        "pt": "Vista explodida",
+        "ru": "Раздельный вид",
+        "zh": "分屏视图"
+      },
+      "zoom": 0.8,
+      "windows": [
+        {
+          "id": "mnemo-clio-timeline",
+          "x": 0,
+          "y": 0,
+          "w": 0.5,
+          "h": 1
+        },
+        {
+          "id": "mnemo-clio-map",
+          "x": 0.5,
+          "y": 0,
+          "w": 0.5,
+          "h": 0.58
+        },
+        {
+          "id": "mnemo-clio-panel",
+          "x": 0.5,
+          "y": 0.58,
+          "w": 0.5,
+          "h": 0.42
+        }
+      ]
+    }
+  ],
   "widgets": [
     {
       "id": "mnemo-clio-main",
@@ -33,6 +75,33 @@
       "route": "index.html",
       "defaultWidth": 1180,
       "defaultHeight": 820
+    },
+    {
+      "id": "mnemo-clio-timeline",
+      "icon": "🕰️",
+      "name": "MnemoClio · Timeline",
+      "route": "index.html",
+      "defaultWidth": 1240,
+      "defaultHeight": 440,
+      "openOnLaunch": false
+    },
+    {
+      "id": "mnemo-clio-map",
+      "icon": "🗺️",
+      "name": "MnemoClio · Map",
+      "route": "index.html",
+      "defaultWidth": 820,
+      "defaultHeight": 600,
+      "openOnLaunch": false
+    },
+    {
+      "id": "mnemo-clio-panel",
+      "icon": "📜",
+      "name": "MnemoClio · Panel",
+      "route": "index.html",
+      "defaultWidth": 400,
+      "defaultHeight": 600,
+      "openOnLaunch": false
     }
   ]
 }

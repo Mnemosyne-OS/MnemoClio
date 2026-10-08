@@ -1,6 +1,6 @@
 {
   "name": "@mnemosyne-plugins/mnemo-clio",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "type": "module",
   "description": "The history of every country on one timeline you can move: regimes, wars, births, works, discoveries, treaties, disasters and more, read from Wikidata (CC0), with today's borders from Natural Earth (public domain).",

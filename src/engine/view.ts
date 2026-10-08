@@ -19,14 +19,18 @@ export const span = (v: View): number => v.y1 - v.y0;
 export const yearToX = (v: View, width: number, year: number): number => ((year - v.y0) / span(v)) * width;
 export const xToYear = (v: View, width: number, x: number): number => v.y0 + (x / width) * span(v);
 
-/** Keep the span inside its limits, then slide the window back inside the bounds. */
+/**
+ * Where the cursor (the centre of the view) may stand: from 10 years after the first year to
+ * 2025. The window itself may run half its width past either end, so the fixed cursor can
+ * reach the first and the last years; what lies past them is empty, never invented.
+ */
+export const CENTRE = { min: BOUNDS.min + 10, max: 2025 } as const;
+
+/** Keep the span inside its limits, then the centre inside CENTRE. */
 export function clampView(v: View): View {
   const s = Math.min(MAX_SPAN, Math.max(MIN_SPAN, span(v)));
-  const mid = (v.y0 + v.y1) / 2;
-  let y0 = mid - s / 2;
-  if (y0 < BOUNDS.min) y0 = BOUNDS.min;
-  if (y0 + s > BOUNDS.max) y0 = BOUNDS.max - s;
-  return { y0, y1: y0 + s };
+  const mid = Math.min(CENTRE.max, Math.max(CENTRE.min, (v.y0 + v.y1) / 2));
+  return { y0: mid - s / 2, y1: mid + s / 2 };
 }
 
 /** Zoom by `factor` (< 1 zooms in) keeping `anchor` where it is on screen: the year under the pointer stays under the pointer. */

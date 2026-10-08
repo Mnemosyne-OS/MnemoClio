@@ -17,8 +17,14 @@
 .clio-title h1 { margin: 0; font-size: 18px; letter-spacing: -0.01em; line-height: 1.1; }
 .clio-title p { margin: 1px 0 0; color: var(--clio-muted); font-size: 11px; }
 .clio-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.clio-play { border: 0; border-radius: 999px; padding: 8px 16px; font: inherit; font-weight: 700; cursor: pointer; background: var(--clio-accent); color: var(--clio-bg); }
-.clio-play.on { box-shadow: 0 0 0 3px color-mix(in srgb, var(--clio-accent) 35%, transparent); }
+/* the transport buttons: the header's quiet style, the same height as its lists (field, 07/10: big
+   filled blue pills with a glow, "c'est horrible"); play's text carries the accent, a state that
+   is on is a thin accent border and a faint tint, never a filled pill */
+.clio-play { border: 1px solid var(--clio-line); border-radius: 10px; padding: 6px 12px; font: inherit; font-size: 13px; font-weight: 600; line-height: 1.2; cursor: pointer; background: var(--clio-panel); color: var(--clio-text); white-space: nowrap; transition: border-color 0.15s, background 0.15s; }
+.clio-play:hover:not(:disabled) { border-color: color-mix(in srgb, var(--clio-accent) 55%, var(--clio-line)); }
+.clio-play.on { border-color: var(--clio-accent); background: color-mix(in srgb, var(--clio-accent) 14%, var(--clio-panel)); }
+.clio-play:disabled { opacity: 0.5; cursor: default; }
+.clio-primary { color: var(--clio-accent); }
 .clio-seg { display: inline-flex; border: 1px solid var(--clio-line); border-radius: 10px; overflow: hidden; }
 .clio-seg button { border: 0; background: transparent; color: var(--clio-text); font: inherit; padding: 6px 10px; cursor: pointer; }
 .clio-seg button + button { border-left: 1px solid var(--clio-line); }
@@ -71,6 +77,16 @@
 .clio-map { position: absolute; inset: 0; }
 .clio-map canvas { display: block; }
 .clio-borders { position: absolute; top: 8px; right: 8px; z-index: 5; background: var(--clio-panel); }
+.clio-rel { list-style: none; margin: 4px 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 13px; }
+.clio-rel i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+.clio-pour { margin: 4px 0 0; }
+.clio-pour p { margin: 2px 0; }
+.clio-epi { margin: 4px 0 0; padding-left: 18px; font-size: 13px; }
+.clio-epi li { margin: 2px 0; }
+.clio-map-tools { position: absolute; right: 8px; top: 46px; z-index: 5; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.clio-map-tools button { border: 1px solid var(--clio-line); background: var(--clio-panel); color: var(--clio-text); border-radius: 999px; padding: 4px 10px; font: inherit; font-size: 12px; cursor: pointer; opacity: 0.7; }
+.clio-map-tools button[aria-pressed='true'] { border-color: var(--clio-accent); opacity: 1; }
+.clio-map-go { border: 1px solid var(--clio-accent); color: var(--clio-text); font: inherit; font-size: 12px; cursor: pointer; }
 .clio-map-note { position: absolute; left: 8px; bottom: 8px; margin: 0; z-index: 5; max-width: 80%; padding: 4px 8px; border-radius: 8px; background: var(--clio-panel); font-size: 12px; }
 .clio-consent { position: absolute; inset: 12px; z-index: 10; overflow: auto; padding: 16px; border-radius: 12px; background: var(--clio-panel); border: 1px solid var(--clio-line); }
 .clio-consent h3 { margin: 0 0 8px; }
@@ -88,6 +104,9 @@
 .clio-error { color: var(--status-error, #ff7a7a); }
 .clio-card { position: relative; display: grid; gap: 6px; animation: clio-in 0.28s ease-out; }
 .clio-card h2 { padding-right: 28px; }
+.clio-wiki { display: grid; gap: 6px; }
+.clio-wiki img { max-width: 100%; max-height: 180px; object-fit: contain; justify-self: start; border-radius: 8px; }
+.clio-wiki p { margin: 0; line-height: 1.45; }
 .clio-tag { margin: 0; display: flex; align-items: center; gap: 6px; color: var(--clio-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
 .clio-close { position: absolute; top: -2px; right: 0; border: 0; background: none; color: var(--clio-muted); font-size: 22px; cursor: pointer; }
 .clio-tree details { border-left: 2px solid var(--clio-line); padding-left: 8px; margin: 4px 0; }
@@ -116,3 +135,27 @@
   .clio-card, .clio-spark { animation: none; }
   .clio-bar i, .clio-chip { transition: none; }
 }
+
+/* the header on one line, its two menus (field, 07/10: "the top band becomes incomprehensible") */
+.clio-brand { margin: 0 6px 0 0; font-size: 17px; white-space: nowrap; }
+.clio-menu-btn { border: 1px solid var(--clio-line); background: var(--clio-panel); color: var(--clio-text); border-radius: 10px; padding: 6px 11px; font: inherit; font-size: 13px; cursor: pointer; white-space: nowrap; }
+.clio-menu-btn[aria-expanded='true'] { border-color: var(--clio-accent); }
+.clio-menu-icons { margin-left: 6px; letter-spacing: 2px; color: var(--clio-muted); }
+.clio-menu { position: absolute; top: calc(100% + 6px); right: 0; z-index: 60; width: min(440px, 92vw); max-height: min(70vh, 640px); overflow-y: auto; display: grid; gap: 8px; padding: 12px; background: var(--clio-panel); border: 1px solid var(--clio-line); border-radius: 12px; box-shadow: 0 14px 34px rgba(0, 0, 0, 0.4); animation: clio-in 0.18s ease-out; }
+.clio-menu-view { width: min(360px, 92vw); }
+.clio-menu-sec h4 { margin: 0 0 6px; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--clio-muted); }
+.clio-layer { display: grid; grid-template-columns: 1fr auto; gap: 6px; align-items: start; padding: 8px; border: 1px solid var(--clio-line); border-radius: 10px; opacity: 0.62; }
+.clio-layer.on { opacity: 1; border-color: var(--clio-accent); }
+.clio-layer-main { display: flex; gap: 10px; align-items: flex-start; text-align: left; border: none; background: transparent; color: var(--clio-text); font: inherit; cursor: pointer; padding: 0; }
+.clio-layer-icon { font-size: 18px; line-height: 1.2; }
+.clio-layer-text { display: grid; gap: 2px; }
+.clio-layer-text small { color: var(--clio-muted); font-size: 12px; }
+.clio-layer-only { border: 1px solid var(--clio-line); background: transparent; color: var(--clio-muted); border-radius: 999px; padding: 2px 9px; font: inherit; font-size: 11px; cursor: pointer; }
+.clio-layer-sub { grid-column: 1 / -1; font-size: 12px; color: var(--clio-muted); display: flex; gap: 6px; align-items: center; padding-left: 28px; }
+.clio-layer-kinds { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 4px; padding-left: 28px; }
+.clio-headnote { margin: 0 14px; }
+
+/* one piece of the exploded view (doc 137 §5vicies): that view fills its window */
+.clio-solo { padding: 6px; }
+.clio-solo > .clio-map-wrap, .clio-solo > .clio-panel { flex: 1; min-height: 0; }
+.clio-solo-main { grid-template-rows: minmax(120px, 1fr); }

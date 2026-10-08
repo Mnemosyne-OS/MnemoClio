@@ -1,0 +1,17 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="MnemoClio">
+  <defs>
+    <linearGradient id="clio-grad" x1="6" y1="42" x2="42" y2="6" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#60a5fa"/>
+      <stop offset="1" stop-color="#a78bfa"/>
+    </linearGradient>
+  </defs>
+  <path d="M14 7H34" stroke="url(#clio-grad)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M14 33H34" stroke="url(#clio-grad)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M16 7C16 14 24 16 24 20C24 24 16 26 16 33" stroke="url(#clio-grad)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M32 7C32 14 24 16 24 20C24 24 32 26 32 33" stroke="url(#clio-grad)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M18.5 30.5C20 27.5 24 26 24 26C24 26 28 27.5 29.5 30.5Z" fill="url(#clio-grad)" fill-opacity="0.16" stroke="url(#clio-grad)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M6 40H42" stroke="url(#clio-grad)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="12" cy="40" r="2.3" fill="url(#clio-grad)"/>
+  <circle cx="24" cy="40" r="2.3" fill="url(#clio-grad)"/>
+  <circle cx="36" cy="40" r="2.3" fill="url(#clio-grad)"/>
+</svg>

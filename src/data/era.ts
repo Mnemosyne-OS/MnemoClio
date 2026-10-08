@@ -148,3 +148,15 @@ export const EMPIRE: Record<string, string[]> = {
   Q155: ['Kingdom of Brazil', 'Brazil'],
   Q1033: ['Sokoto Caliphate', 'Oyo', 'Kanem-Bornu', 'Nigeria'],
 };
+
+/**
+ * Does a shape of a map of the time belong to a shown country whose land it lies on today?
+ * Only when its name says so (field, 07/10: the United States were painted over the hundreds
+ * of peoples the map of 1492 names there). "United States of America" in 1783, "Empire of
+ * Japan", "Kingdom of France" carry the country's name; "Cherokee", "Roman Empire" do not.
+ * Names shorter than 4 letters are ignored (they would match inside any word).
+ */
+export function namesCountry(shapeName: string, countryNames: Array<string | null | undefined>): boolean {
+  const s = shapeName.toLowerCase();
+  return countryNames.some((n) => !!n && n.length >= 4 && s.includes(n.toLowerCase()));
+}

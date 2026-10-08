@@ -40,6 +40,11 @@ if (fs.existsSync(join(here, 'leaders.json'))) {
   });
   history.offices = offices;
 }
+// every country's name in the languages of the app (w/country-langs.mjs); absent = not on Wikidata
+if (fs.existsSync(join(here, 'w', 'country-langs.json'))) {
+  const nl = read('w/country-langs.json');
+  for (const c of history.countries) if (nl[c.id]) c.nl = nl[c.id];
+}
 const events = read('events.json');
 // a polity's count is what Wikidata ties to it directly (the 12th column of an event row)
 for (const r of events.e) if (r[11] >= 0 && history.countries[r[11]]) history.countries[r[11]].n++;
@@ -58,6 +63,26 @@ for (const [kind, rows] of byKind) {
 }
 files.push({ file: 'world-today.json', what: 'world', bytes: write('world-today.json', world) });
 
+// One file of names per language of the app (w/names-langs.mjs), kept OUT of `files`: the loader
+// reads `files` at start, these are read only when someone asks for names in that language.
+// Only the items this data names are written, and only the names Wikidata has.
+const names = {};
+if (fs.existsSync(join(here, 'w', 'names-langs.json'))) {
+  const all = read('w/names-langs.json');
+  const used = new Set();
+  for (const w of history.wars) { used.add(w.id); for (const b of w.b) if (b.q) used.add(b.q); }
+  for (const r of history.states) used.add(r.id);
+  for (const p of history.periods ?? []) used.add(p.id);
+  for (const l of history.leaders ?? []) used.add(l.q);
+  for (const o of history.offices ?? []) used.add(o.id);
+  for (const r of events.e) used.add('Q' + r[10]);
+  for (const lang of ['en', 'es', 'de', 'pt', 'ru', 'zh']) {
+    const m = {};
+    for (const q of used) { const v = all[q]?.[lang]; if (v) m[q] = v; }
+    names[lang] = { file: `names-${lang}.json`, count: Object.keys(m).length, bytes: write(`names-${lang}.json`, m) };
+  }
+}
+
 write('meta.json', {
   readAt,
   source: 'Wikidata (CC0) · Natural Earth (public domain)',
@@ -65,7 +90,9 @@ write('meta.json', {
   wars: history.wars.length,
   regimes: history.states.length,
   files,
+  names,
 });
 const total = files.reduce((s, f) => s + f.bytes, 0);
 console.log(`public/data: ${files.length} files, ${(total / 1e6).toFixed(2)} MB, read ${readAt}`);
+for (const [lang, n] of Object.entries(names)) console.log(`  names-${lang}.json`.padEnd(32), `${(n.bytes / 1e3).toFixed(0)} kB`.padStart(8), ' ', n.count, '(read on demand)');
 for (const f of files) console.log(`  ${f.file.padEnd(28)} ${(f.bytes / 1e3).toFixed(0).padStart(6)} kB${f.count != null ? '  ' + f.count : ''}`);

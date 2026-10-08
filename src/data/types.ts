@@ -34,6 +34,8 @@ export interface Country extends Named {
   e: number | null;
   /** English name: the key to the era maps, whose names are in English. */
   en: string | null;
+  /** Its name in each language of the app Wikidata has a label for (en, es, de, pt, ru, zh); French is `f`. */
+  nl: Partial<Record<string, string>>;
 }
 
 export interface Ev extends Named {
@@ -65,6 +67,8 @@ export interface Regime extends Named {
 }
 
 export interface Battle extends Named {
+  /** Wikidata id (data written from 07/10 on): the key to its name in another language. */
+  q?: string;
   y: number;
   c: string;
   lon: number | null;

@@ -4,4 +4,7 @@ node_modules/
 scripts/wikidata/*.json
 scripts/wikidata/w/*.json
 scripts/wikidata/ev/*.json
+scripts/population/*.json
+scripts/epidemics/*.json
+scripts/religions/*.json
 *.log

@@ -30,7 +30,7 @@ for(const [bid,{w,x}] of Object.entries(pick)){const c=id(x.c.value);
 const W=Object.values(wars).map(w=>{const bs=Object.values(w.b).sort((a,b)=>a.y-b.y);const cnt={};for(const b of bs)cnt[b.c]=(cnt[b.c]||0)+1;
   const c=Object.entries(cnt).sort((a,b)=>b[1]-a[1])[0][0];
   const groups={};for(const b of bs)if(b.g&&!groups[b.g])groups[b.g]=lab(b.g,c);
-  return {id:w.id,c,s:w.s??bs[0].y,e:w.e??bs.at(-1).y,...lab(w.id,c),groups,b:bs.map(b=>({...lab(b.id,b.c),y:b.y,c:b.c,lon:b.lon,lat:b.lat,g:b.g}))}});
+  return {id:w.id,c,s:w.s??bs[0].y,e:w.e??bs.at(-1).y,...lab(w.id,c),groups,b:bs.map(b=>({...lab(b.id,b.c),q:b.id,y:b.y,c:b.c,lon:b.lon,lat:b.lat,g:b.g}))}});
 // periods: a war that sits above at least two of the wars kept here
 const kept=new Set(W.map(w=>w.id));const kids={};
 for(const w of W)for(const a of (anc[w.id]||[]))(kids[a]=kids[a]||[]).push(w.id);

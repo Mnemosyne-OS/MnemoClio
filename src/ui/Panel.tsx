@@ -6,7 +6,12 @@
  * of the data: the same year, every other country, every subject), and the feed of what the
  * play cursor just passed, newest on top.
  */
-import type { CSSProperties, ReactNode } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react';
+import { fetchSummary, type WikiSummary } from '../data/wiki';
+import { fmtPct, fmtPop, popAt, womenAt, type Population, type Series } from '../data/population';
+import { epiName, underWay, type Epidemic } from '../data/epidemics';
+import { FAMILY_HUE, countsByFamily, foundedIn, relName, standingAt, type Religions } from '../data/religions';
+import type { PourState } from './usePourHistory';
 import type { Ev, History, Kind, Named, War } from '../data/types';
 import { uniqueByQ } from '../data/decode';
 import { KIND_HUE } from '../engine/palette';
@@ -31,12 +36,27 @@ export interface PanelProps {
   playing: boolean;
   tr: boolean;
   name: (x: Named) => string;
+  /** Has this item a name in the person's language? Those that have none are set in italics. */
+  translated: (x: Named) => boolean;
   t: T;
+  /** The app's language: the Wikipedia a card reads first. */
+  lang: string;
   onPick: (p: Picked | null) => void;
+  /** How many people lived there (Our World in Data); null while it is read or when it could not be. */
+  pop: Population | null;
+  /** Outbreaks (Wikidata), empty when they are off or not read yet. */
+  epidemics: Epidemic[];
+  /** The years around the cursor the map shows: an outbreak with no dated end is under way only that close to its start. */
+  epiWindow: number;
+  /** Places of worship and currents, null when the layer is off. */
+  religions: Religions | null;
+  /** Pouring a country's history into memory; null outside the shell (no memory there). */
+  pour: { stateOf: (c: string) => PourState; busy: string | null; start: (c: string) => void; stop: () => void } | null;
 }
 
 const kindDot = (k: Kind): CSSProperties => ({ background: `hsl(${KIND_HUE[k]} 68% var(--clio-l))` });
 
+/** The side panel: the card of what was picked, else the cursor's year around the world, and the feed while playing. */
 export function Panel(p: PanelProps) {
   return (
     <div className="clio-panel">
@@ -47,8 +67,8 @@ export function Panel(p: PanelProps) {
 }
 
 function Nm({ x, p }: { x: Named; p: PanelProps }) {
-  const missing = p.tr && !x.f;
-  return <span lang={p.tr && x.f ? 'fr' : x.ol} className={missing ? 'clio-untr' : undefined}>{p.name(x)}</span>;
+  const has = p.translated(x);
+  return <span lang={p.tr && has ? p.lang : x.ol} className={p.tr && !has ? 'clio-untr' : undefined}>{p.name(x)}</span>;
 }
 
 function EvPill({ e, p, withYear = true, withCountry = false }: { e: Ev; p: PanelProps; withYear?: boolean; withCountry?: boolean }) {
@@ -90,14 +110,22 @@ function Now(p: PanelProps) {
       </section>
     );
   };
-  const byC = new Map<string, Ev[]>();
-  for (const e of p.all) {
-    const k = e.c ?? 'world'; let l = byC.get(k); if (!l) byC.set(k, (l = [])); l.push(e);
-    if (e.h) { let m = byC.get(e.h); if (!m) byC.set(e.h, (m = [])); m.push(e); }
-  }
+  // grouped once per load, not once per year: dragging the dates crossed dozens of years a
+  // second and regrouped all 60 000 events each time (field, 07/10: "the PC goes mad")
+  const byC = useMemo(() => {
+    const m = new Map<string, Ev[]>();
+    for (const e of p.all) {
+      const k = e.c ?? 'world'; let l = m.get(k); if (!l) m.set(k, (l = [])); l.push(e);
+      if (e.h) { let n = m.get(e.h); if (!n) m.set(e.h, (n = [])); n.push(e); }
+    }
+    return m;
+  }, [p.all]);
   return (
     <div className="clio-now">
       <h2>{t('now.title', { year: fy(year) })}</h2>
+      <PopLine series={p.pop?.world} women={p.pop?.women.world} year={year} p={p} world />
+      <EpiLine p={p} year={year} />
+      {p.religions && <RelBlock r={p.religions} p={p} year={year} />}
       {periods.length > 0 && (
         <section className="clio-block" style={{ '--c': 'var(--accent)' } as CSSProperties}>
           <h3>{t('now.periods')}</h3>
@@ -113,6 +141,8 @@ function Now(p: PanelProps) {
         const wars = p.showWars ? p.history.wars.filter((w) => w.s <= year && year <= w.e && w.b.some((b) => b.c === id)) : [];
         const extra = (
           <>
+            <PopLine series={p.pop?.c[id]} women={p.pop?.women.c[id]} year={year} p={p} />
+            {p.pour && c.kind !== 'territory' && <PourLine id={id} label={p.name(c)} p={p} pour={p.pour} />}
             {outside && <p className="clio-note">{t('polity.outside', { s: c.s === null ? '?' : fy(c.s), e: c.e === null ? '?' : fy(c.e) })}</p>}
             {regimes.length > 0 && <div className="clio-regime">{regimes.slice(0, 4).map((r, i) => <span key={r.id + i}>{i > 0 && ' · '}<button type="button" className="clio-link" onClick={() => p.onPick({ type: 'regime', id: r.id, c: r.c })}><Nm x={r} p={p} /></button></span>)}</div>}
             {inPower.length > 0 && (
@@ -132,12 +162,128 @@ function Now(p: PanelProps) {
   );
 }
 
+/**
+ * "≈ 28.0M people on its land today · ♀ 51.6 %": the figure of the year, nothing when there is
+ * none (an ended state, a year before the series). Before 1950 a reconstruction, written ≈.
+ */
+function PopLine({ series, women, year, p, world }: { series: Series | undefined; women: Series | undefined; year: number; p: PanelProps; world?: boolean }) {
+  const at = popAt(series, year);
+  if (!at) return null;
+  const n = (at.about ? '≈ ' : '') + fmtPop(at.v, p.lang);
+  const w = womenAt(women, year);
+  return (
+    <p className="clio-note clio-popline" title={p.t(`pop.source.${at.source}` as Key)}>
+      👥 {p.t(world ? 'pop.world' : 'pop.land', { n })}
+      {w !== null && <> · ♀ {fmtPct(w, p.lang)} % · ♂ {fmtPct(100 - w, p.lang)} %</>}
+    </p>
+  );
+}
+
+/** The outbreaks under way, best known first: name, years ("end not dated" when none is), deaths when Wikidata records them. */
+function EpiLine({ p, year }: { p: PanelProps; year: number }) {
+  const on = p.epidemics.filter((ep) => underWay(ep, year, p.epiWindow)).sort((a, b) => b.sl - a.sl);
+  if (!on.length) return null;
+  return (
+    <section className="clio-block" style={{ '--c': 'hsl(356 68% var(--clio-l))' } as CSSProperties}>
+      <h3>☣ {p.t('epi.title')}</h3>
+      <ul className="clio-epi">
+        {on.slice(0, 5).map((ep) => (
+          <li key={ep.q} lang={ep.n[p.lang] ? p.lang : 'en'}>
+            {epiName(ep, p.lang)} <small className="clio-note">{ep.e === null ? p.t('epi.noEnd', { s: fy(ep.s) }) : fspan(ep.s, ep.e)}{ep.dead !== null && <> · {p.t('epi.dead', { n: fmtPop(ep.dead, p.lang) })}</>}</small>
+          </li>
+        ))}
+      </ul>
+      {on.length > 5 && <p className="clio-note">{p.t('epi.more', { n: on.length - 5 })}</p>}
+    </section>
+  );
+}
+
+/**
+ * The legend of the religions layer: each family's colour and how many of its places of worship
+ * Wikidata knows standing this year, in the FIXED order (never sorted by count), what it is not
+ * (believers), and the currents founded in this moment. No count per country (doc 137 §5quaterdecies).
+ */
+function RelBlock({ r, p, year }: { r: Religions; p: PanelProps; year: number }) {
+  const counts = useMemo(() => countsByFamily(standingAt(r.places, year), r.families.length), [r, year]);
+  const m = periodOf(year);
+  const born = foundedIn(r.currents, m.start, m.size);
+  return (
+    <section className="clio-block" style={{ '--c': 'var(--text-muted)' } as CSSProperties}>
+      <h3>✦ {p.t('rel.title')}</h3>
+      <p className="clio-note">{p.t('rel.what')}</p>
+      <ul className="clio-rel">
+        {r.families.map((fq, i) => counts[i] ? (
+          <li key={fq}><i style={{ background: `hsl(${FAMILY_HUE[i]} 68% var(--clio-l))` }} />{relName(r, fq, p.lang)} <small>{counts[i]!.toLocaleString(p.lang)}</small></li>
+        ) : null)}
+        {counts[r.families.length] ? <li><i style={{ background: 'var(--text-muted)' }} />{p.t('rel.other')} <small>{counts[r.families.length]!.toLocaleString(p.lang)}</small></li> : null}
+      </ul>
+      {born.length > 0 && (
+        <p className="clio-note">{p.t('rel.born', { span: fspan(m.start, m.start + m.size - 1) })} {born.map((c, i) => <span key={c.q}>{i > 0 && ' · '}{relName(r, c.q, p.lang)} ({c.about ? p.t('year.about', { y: fy(c.y) }) : fy(c.y)})</span>)}</p>
+      )}
+    </section>
+  );
+}
+
+/** The memory line of a country block: pour its history, how far it went, what to do next. */
+function PourLine({ id, label, p, pour }: { id: string; label: string; p: PanelProps; pour: NonNullable<PanelProps['pour']> }) {
+  const s = pour.stateOf(id);
+  const t = p.t;
+  const other = pour.busy !== null && pour.busy !== id;
+  const button = (key: 'pour.start' | 'pour.again') => (
+    <button type="button" className="clio-link" disabled={other} title={other ? t('pour.busy') : t('pour.hint')} onClick={() => pour.start(id)}>{t(key, { country: label })}</button>
+  );
+  if (s.kind === 'pouring') return (
+    <p className="clio-note clio-pour" role="status">
+      📚 {t('pour.progress', { done: s.done, total: s.total })}{s.refused > 0 && <> · {t('pour.refused', { n: s.refused })}{s.why && <> ({s.why})</>}</>}{' '}
+      <button type="button" className="clio-link" onClick={pour.stop}>{t('pour.stop')}</button>
+    </p>
+  );
+  if (s.kind === 'done') return (
+    <div className="clio-note clio-pour" role="status">
+      <p>📚 {t(s.stopped ? 'pour.stopped' : 'pour.done', { n: s.poured.n, vault: s.poured.vault })}{s.refused > 0 && <> {t('pour.refused', { n: s.refused })}{s.why && <> ({s.why})</>}</>}</p>
+      <p>{t('pour.scope', { vault: s.poured.vault })}</p>
+    </div>
+  );
+  if (s.kind === 'failed') return (
+    <p className="clio-note clio-pour clio-error" role="alert">📚 {s.why.includes('NO_KNOWLEDGE_ROOT') ? t('pour.noRoot') : t('pour.failed', { why: s.why })} {button('pour.again')}</p>
+  );
+  return <p className="clio-note clio-pour">📚 {s.last ? <>{t('pour.last', { date: s.last.at, n: s.last.n, vault: s.last.vault })} {button('pour.again')}</> : button('pour.start')}</p>;
+}
+
 function WarPill({ w, p, here }: { w: War; p: PanelProps; here?: string }) {
   const n = here ? w.b.filter((b) => b.y === p.year && b.c === here).length : 0;
   return (
     <button type="button" className="clio-pill clio-solid" onClick={() => p.onPick({ type: 'war', id: w.id })}>
       <Nm x={w} p={p} />{n > 0 && <small> · {n}</small>}
     </button>
+  );
+}
+
+/** A card's Wikipedia summary: read when the card opens, in the app's language, else English. */
+function Wiki({ q, lang, t }: { q: string; lang: string; t: T }) {
+  const [st, setSt] = useState<{ q: string; s: 'loading' } | { q: string; s: 'ok'; w: WikiSummary } | { q: string; s: 'none' } | { q: string; s: 'error'; why: string }>({ q, s: 'loading' });
+  useEffect(() => {
+    const ac = new AbortController();
+    setSt({ q, s: 'loading' });
+    fetchSummary(q, lang, ac.signal).then(
+      (w) => { if (!ac.signal.aborted) setSt(w ? { q, s: 'ok', w } : { q, s: 'none' }); },
+      (e: unknown) => { if (!ac.signal.aborted) setSt({ q, s: 'error', why: e instanceof Error ? e.message : String(e) }); },
+    );
+    return () => ac.abort();
+  }, [q, lang]);
+  // a state left from the previous card is never shown under this one
+  if (st.q !== q || st.s === 'loading') return <p className="clio-note">{t('wiki.loading')}</p>;
+  if (st.s === 'none') return <p className="clio-empty">{t('wiki.none')}</p>;
+  if (st.s === 'error') return <p className="clio-empty">{t('wiki.failed', { why: st.why })}</p>;
+  const w = st.w;
+  return (
+    <div className="clio-wiki" lang={w.lang}>
+      {w.image && <img src={w.image} alt="" loading="lazy" onError={(e) => { e.currentTarget.style.display = 'none'; }} />}
+      <p>{w.extract}</p>
+      <p className="clio-note">
+        <a href={w.url} target="_blank" rel="noopener noreferrer">{w.lang === lang ? t('wiki.read') : t('wiki.readEn')}</a> · {t('wiki.source')}
+      </p>
+    </div>
   );
 }
 
@@ -161,6 +307,7 @@ function Card(p: PanelProps & { picked: Picked }) {
           {country ? <Nm x={country} p={p} /> : t('card.noCountry')} · {t('card.known', { n: e.sl })} ·{' '}
           <a href={`https://www.wikidata.org/wiki/${e.q}`} target="_blank" rel="noopener noreferrer">{t('card.wikidata')}</a>
         </p>
+        <Wiki q={e.q} lang={p.lang} t={t} />
         <h3>{t('card.meanwhile', { year: fey(e) })}</h3>
         {same.length ? <div className="clio-pills">{same.map((x) => <EvPill key={x.q} e={x} p={p} withYear={false} withCountry />)}</div> : <p className="clio-empty">{t('card.meanwhileNone')}</p>}
         {wars.length > 0 && <div className="clio-pills">{wars.map((w) => <WarPill key={w.id} w={w} p={p} />)}</div>}
@@ -185,6 +332,7 @@ function Card(p: PanelProps & { picked: Picked }) {
           {t('leader.term', { s: fy(l.s), e: l.open ? '?' : fy(l.e) })} · {country ? <Nm x={country} p={p} /> : null} · {t('card.known', { n: l.sl })} ·{' '}
           <a href={`https://www.wikidata.org/wiki/${l.q}`} target="_blank" rel="noopener noreferrer">{t('card.wikidata')}</a>
         </p>
+        <Wiki q={l.q} lang={p.lang} t={t} />
         <h3>{t('leader.chain')}</h3>
         <div className="clio-chain">
           {around.map((x, k) => (
@@ -210,6 +358,7 @@ function Card(p: PanelProps & { picked: Picked }) {
         <p className="clio-tag">{t('war.title')}</p>
         <h2><Nm x={w} p={p} /></h2>
         <p className="clio-note">{t('war.counts', { s: fy(w.s), e: fy(w.e), n: w.b.length, g: groups.size - (groups.has('') ? 1 : 0) })}</p>
+        <Wiki q={w.id} lang={p.lang} t={t} />
         <div className="clio-tree">
           {ordered.map(([g, bs]) => (
             <details key={g || 'direct'} open={ordered.length <= 3}>

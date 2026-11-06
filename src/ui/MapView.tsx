@@ -10,19 +10,20 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Country, Ev, Named, Period, War, WorldCountry } from '../data/types';
 import { fadeFor, rootsOf, warClouds } from '../engine/clouds';
-import { dragDegrees, globeOf, project, turnCam, type Pt } from '../engine/globe';
+import { dragDegrees, globeOf, project, turnCam, type Pt } from '@mnemosyne_os/timeline-map/globe';
 import { fociAt, type Epidemic } from '../data/epidemics';
 import { FAMILY_HUE, foundedIn, standingAt, type Current, type Place, type Religions } from '../data/religions';
 import { EMPIRE, namesCountry, polityNameIndex, type EraShape } from '../data/era';
-import { Arrivals, rippleProgress, type Ripple } from '../engine/arrival';
+import { Arrivals, rippleProgress, type Ripple } from '@mnemosyne_os/timeline-map/arrival';
 import { KIND_HUE, hsl, kindColor } from '../engine/palette';
-import type { Picked, Scene } from '../engine/scene';
-import { completeTheme, type Theme } from '../engine/theme';
-import { span as viewSpan } from '../engine/view';
-import { fey, fy } from '../engine/years';
-import { drawDot } from '../engine/dot';
-import { bbOf, inRing, windowFor } from '../engine/mapGeometry';
-import { WORLD, panCam, toLat, toLon, zoomCam, type Cam, type Projection } from '../engine/mapCam';
+import type { Scene } from '@mnemosyne_os/timeline-map/scene';
+import type { Picked } from '../engine/picked';
+import { completeTheme, type Theme } from '@mnemosyne_os/timeline-map/theme';
+import { span as viewSpan } from '@mnemosyne_os/timeline-map/view';
+import { fey, fy } from '@mnemosyne_os/timeline-map/years';
+import { drawDot } from '@mnemosyne_os/timeline-map/dot';
+import { bbOf, inRing, windowFor } from '@mnemosyne_os/timeline-map/mapGeometry';
+import { WORLD, panCam, toLat, toLon, zoomCam, type Cam, type Projection } from '@mnemosyne_os/timeline-map/mapCam';
 
 const MAX_DOTS = 320;
 

@@ -14,10 +14,12 @@ import { FAMILY_HUE, countsByFamily, foundedIn, relName, standingAt, type Religi
 import type { PourState } from './usePourHistory';
 import type { Ev, History, Kind, Named, War } from '../data/types';
 import { uniqueByQ } from '../data/decode';
+import { meanwhileList } from '../data/fact';
 import { KIND_HUE } from '../engine/palette';
-import type { Picked, Spark } from '../engine/scene';
+import type { Spark } from '@mnemosyne_os/timeline-map/scene';
+import type { Picked } from '../engine/picked';
 import type { Key } from '../i18n/strings';
-import { fey, fspan, fy, periodOf } from '../engine/years';
+import { fey, fspan, fy, periodOf } from '@mnemosyne_os/timeline-map/years';
 
 type T = (key: Key, vars?: Record<string, string | number>) => string;
 
@@ -295,7 +297,7 @@ function Card(p: PanelProps & { picked: Picked }) {
     if (!e) return null;
     const country = e.c ? p.history.countries.find((k) => k.id === e.c) : null;
     // the crossing: the same year, every OTHER country, every chosen subject, most known first
-    const same = uniqueByQ(p.all.filter((x) => x.y === e.y && x.q !== e.q && x.c !== e.c && p.kinds.has(x.k)).sort((a, b) => b.sl - a.sl)).slice(0, 12);
+    const same = meanwhileList(e.y, p.all, p.kinds, { q: e.q, c: e.c });
     const wars = p.history.wars.filter((w) => w.s <= e.y && e.y <= w.e).sort((a, b) => b.b.length - a.b.length).slice(0, 4);
     return (
       <div className="clio-card">

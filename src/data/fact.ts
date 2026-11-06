@@ -6,7 +6,8 @@
  * same day, the same all day long) or on a press. ⚠️ Our dates are YEARS: the card says
  * "in 1789", never "on this day" — the data cannot tell what happened on a given day.
  */
-import type { Ev } from './types';
+import type { Ev, Kind } from './types';
+import { uniqueByQ } from './decode';
 
 export const FACT_CARD_ID = 'fact';
 /** Known enough to make a card: articles in at least this many Wikipedias. */
@@ -83,4 +84,13 @@ export function factCard(o: {
     tone: 'idle',
     snapshot: true,
   };
+}
+
+/**
+ * Elsewhere the same year, as the card of an event lists it: every OTHER country, every subject
+ * shown, the best known first, each event once. The panel's card and an agent's `meanwhile`
+ * read this one function, so the agent says what the person sees.
+ */
+export function meanwhileList(year: number, events: readonly Ev[], kinds: ReadonlySet<Kind>, not: { q?: string; c?: string | null } = {}, max = 12): Ev[] {
+  return uniqueByQ(events.filter((x) => x.y === year && x.q !== not.q && (not.c === undefined || x.c !== not.c) && kinds.has(x.k)).sort((a, b) => b.sl - a.sl)).slice(0, max);
 }

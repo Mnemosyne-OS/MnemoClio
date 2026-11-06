@@ -3,8 +3,8 @@
  * the other ends at once, so the rules are read without a browser.
  */
 import { describe, expect, it, vi } from 'vitest';
-import { Scene } from '../engine/scene';
-import { centreOn } from '../engine/view';
+import { Scene } from '@mnemosyne_os/timeline-map/scene';
+import { centreOn } from '@mnemosyne_os/timeline-map/view';
 import { CLOCK_SILENCE_MS, JOIN_WAIT_MS, choicesKey, linkWindows, readChoices, readPeerScene, roleOf, type Choices, type Port } from './sync';
 
 const tick = () => new Promise<void>((r) => queueMicrotask(r));

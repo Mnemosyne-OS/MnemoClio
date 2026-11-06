@@ -12,9 +12,10 @@ import { getJson, loadAll } from './data/load';
 import { ERA_LICENSE, ERA_SOURCE, ERA_YEARS, eraFor, loadEra, type EraShape } from './data/era';
 import { KINDS, type Ev, type History, type Kind, type Meta, type Named, type WorldCountry } from './data/types';
 import { KIND_HUE } from './engine/palette';
-import { Scene, type Picked } from './engine/scene';
-import { readTheme, type Theme } from './engine/theme';
-import { centreOn, span, zoomAt, MAX_SPAN, BOUNDS } from './engine/view';
+import { Scene } from '@mnemosyne_os/timeline-map/scene';
+import type { Picked } from './engine/picked';
+import { readTheme, type Theme } from '@mnemosyne_os/timeline-map/theme';
+import { centreOn, span, zoomAt, MAX_SPAN, BOUNDS } from '@mnemosyne_os/timeline-map/view';
 import { useI18n } from './i18n/useI18n';
 import type { Key } from './i18n/strings';
 import { MapView } from './ui/MapView';
@@ -22,8 +23,8 @@ import { Panel } from './ui/Panel';
 import { countryName, translatedName } from './data/names';
 import { Timeline } from './ui/Timeline';
 import { LAYOUTS, clampLayout, readLayout, saveLayout, type Layout } from './ui/layout';
-import { fey, fspan, fy, periodOf, setYearFormat } from './engine/years';
-import { parseWhen, type When } from './engine/when';
+import { fey, fspan, fy, periodOf, setYearFormat } from '@mnemosyne_os/timeline-map/years';
+import { parseWhen, type When } from '@mnemosyne_os/timeline-map/when';
 import { factCard, meanwhileOf, yearsAgo } from './data/fact';
 import { useFactCard } from './ui/useFactCard';
 import { usePourHistory } from './ui/usePourHistory';
@@ -33,13 +34,15 @@ import { ViewMenu } from './ui/ViewMenu';
 import { roleOf, type Choices } from './ui/sync';
 import { useSync } from './ui/useSync';
 import { useSceneStepper } from './ui/useSceneStepper';
+import { ClioAgentActions } from './ui/ClioAgentActions';
+import { countryMatches, findByName, fold } from './data/search';
 import { useBoard } from './ui/useBoard';
 import type { LayerId, LayerState } from './data/layers';
 import { chroniclesOf, packNameOf, type ChronicleWords } from './data/chronicle';
 import { fmtPop, popAt } from './data/population';
 import type { Population } from './data/population';
 import { epiName, type Epidemic } from './data/epidemics';
-import { windowFor } from './engine/mapGeometry';
+import { windowFor } from '@mnemosyne_os/timeline-map/mapGeometry';
 import { decodeReligions, relName, type Current, type Place, type RawReligions, type Religions } from './data/religions';
 import './ui/clio.css';
 
@@ -48,8 +51,6 @@ const SPEEDS = [1, 5, 20, 60];
 /** Years to jump to, from the first cities to the fall of the Berlin Wall. Only years: what happened is on the timeline. */
 const JUMPS = [-3000, -1500, -500, -44, 476, 800, 1066, 1453, 1492, 1789, 1870, 1914, 1945, 1989];
 const CONSENT_KEY = 'mnemo-clio.era-consent';
-
-const fold = (s: string | null | undefined) => (s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
 function readConsent(): boolean {
   try { return localStorage.getItem(CONSENT_KEY) === '1'; } catch (e) { console.warn('[MnemoClio] consent not readable', e); return false; }
@@ -159,7 +160,8 @@ export default function App() {
   const [borders, setBorders] = useState<'now' | 'era'>('now');
   const [askEra, setAskEra] = useState(false);
   // the borders of the time: at once when the person already said yes, else the consent first
-  const showEra = () => { if (readConsent()) setBorders('era'); else setAskEra(true); };
+  /** True when the era's borders show; false when the person is asked first (an agent's setView says so). */
+  const showEra = (): boolean => { if (readConsent()) { setBorders('era'); return true; } setAskEra(true); return false; };
   const [picked, setPicked] = useState<Picked | null>(null);
   // how the window is shared between the timeline, the map and the panel: three presets, two splitters
   const [layout, setLayout] = useState<Layout>(readLayout);
@@ -291,21 +293,8 @@ export default function App() {
   // ---- search ----
   const [q, setQ] = useState('');
   const asked = useMemo(() => parseWhen(q), [q]);
-  const results = useMemo(() => {
-    // "va à la Révolution française": the name search looks for "révolution française"
-    const f = asked.rest;
-    if (f.length < 2 || !history) return null;
-    const hit = (x: Named) => fold(x.o).includes(f) || fold(x.f).includes(f);
-    // one item can sit in two subjects (a person who is also a discovery): offered once
-    const seen = new Set<string>();
-    return {
-      events: all.filter(hit).sort((a, b) => b.sl - a.sl).filter((e) => !seen.has(e.q) && !!seen.add(e.q)).slice(0, 10),
-      wars: history.wars.filter(hit).slice(0, 4),
-      regimes: history.regimes.filter(hit).slice(0, 4),
-      leaders: history.leaders.filter(hit).sort((a, b) => b.sl - a.sl).slice(0, 5),
-      periods: history.periods.filter(hit).slice(0, 4),
-    };
-  }, [asked, all, history]);
+  // "va à la Révolution française": the name search looks for "révolution française"
+  const results = useMemo(() => (history ? findByName(asked.rest, all, history) : null), [asked, all, history]);
 
   // ---- going to a moment, looping on it, a moment at random ----
   /** A year keeps the zoom (at most 600 years around it); a range fills the screen. */
@@ -431,11 +420,11 @@ export default function App() {
     if (!history) return [];
     const f = fold(pickQ.trim());
     // empty search: today's states first (the best covered), so the first offers are not obscure territories
-    return history.countries.filter((c) => !shown.includes(c.id) && (!f || fold(c.o).includes(f) || fold(c.f).includes(f) || fold(c.en).includes(f))).sort((a, b) => (f ? 0 : Number(a.kind !== 'state') - Number(b.kind !== 'state')) || b.n - a.n).slice(0, f ? 12 : 8);
+    return history.countries.filter((c) => !shown.includes(c.id) && (!f || countryMatches(c, f))).sort((a, b) => (f ? 0 : Number(a.kind !== 'state') - Number(b.kind !== 'state')) || b.n - a.n).slice(0, f ? 12 : 8);
   }, [history, pickQ, shown]);
   const pickHitsShown = useMemo(() => {
     const f = fold(pickQ.trim());
-    return !!f && !!history?.countries.some((c) => shown.includes(c.id) && (fold(c.o).includes(f) || fold(c.f).includes(f) || fold(c.en).includes(f)));
+    return !!f && !!history?.countries.some((c) => shown.includes(c.id) && countryMatches(c, f));
   }, [history, pickQ, shown]);
 
   const capLine = (k: Kind) => {
@@ -660,6 +649,11 @@ export default function App() {
           {tr && <p className="clio-note">{namesState.loading ? t('names.loading', { language: langLabel }) : namesState.failed ? t('names.failed', { language: langLabel, why: namesState.failed }) : untr > 0 ? t('names.missing', { n: untr, language: langLabel }) : t('names.allThere', { language: langLabel })}</p>}
         </div>
       )}
+      {/* what an agent may do here (doc 149): served by the window that has the header, so one per Clio; last, so nothing before it remounts */}
+      <ClioAgentActions scene={scene} history={history} all={all} byQ={byQ} laneEvents={laneEvents} shown={shown} setShown={setShown}
+        kinds={kinds} layerState={layerState} setLayerState={setLayerState} borders={borders} picked={picked} pick={pick} name={name}
+        reduceMotion={reduceMotion} goToWhen={goToWhen} loopWhen={loopWhen} speeds={SPEEDS} loaded={{ subjects: loadedKinds, of: totalKinds }} role={role}
+        tr={tr} setTr={setTr} setBorders={setBorders} showEra={showEra} eraConsented={readConsent} randomMoment={randomMoment} />
     </>
   );
   if (role === 'timeline') {

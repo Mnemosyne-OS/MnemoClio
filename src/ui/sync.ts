@@ -14,7 +14,8 @@
  *   so a window opened on 1492 does not start at 1870.
  */
 import { KINDS, type Kind } from '../data/types';
-import type { Picked, PeerScene, Scene } from '../engine/scene';
+import type { PeerScene, Scene } from '@mnemosyne_os/timeline-map/scene';
+import type { Picked } from '../engine/picked';
 
 export const SYNC_CHANNEL = 'mnemo-clio.sync.v1';
 /** A new window waits this long for an answer before its own choices may go out. */

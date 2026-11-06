@@ -1,7 +1,7 @@
 {
   "name": "@mnemosyne-plugins/mnemo-clio",
   "displayName": "MnemoClio",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "category": "Memory",
   "icon": "icon.svg",
   "vendor": "Mnemosyne Labs",
@@ -15,6 +15,7 @@
   "keywords": [
     "history",
     "timeline",
+    "frise",
     "wikidata",
     "geography",
     "map",
@@ -25,6 +26,7 @@
     "cockpit:pin",
     "vault:write"
   ],
+  "repository": "https://github.com/Mnemosyne-OS/MnemoClio",
   "updateStrategy": "git",
   "entrypoints": {
     "renderer": "index.html"
@@ -103,5 +105,339 @@
       "defaultHeight": 600,
       "openOnLaunch": false
     }
-  ]
+  ],
+  "agentGuide": [
+    "Name an event, a war, a regime, a period or a ruler the way the person says it (« la Révolution française », « Napoléon », « la guerre de Cent Ans »): open and goTo find it by its words. Several matches are refused with their names (AMBIGUOUS): pick one, or add type, year or country, and call again.",
+    "To look at something: open shows its card and the timeline glides to it; goTo goes to a year, a period or a named thing without a card; zoom (in, out, all) and move (years forward or back) as the View menu and the arrows do; close closes the card; meanwhile says what happened elsewhere the same year.",
+    "goTo accepts « 1789 », « XVe siècle » or a range, with an optional zoom; chooseCountries before goTo to compare countries.",
+    "A country name that fits two (the two Congos) is refused AMBIGUOUS with their ids: pass one."
+  ],
+  "agentActions": [
+    {
+      "id": "status",
+      "summary": "Say what the timeline shows now: the years on screen, the countries and subjects, what is open, whether it plays",
+      "details": "Years are numbers: negative is BC, there is no year 0. eventsOnScreen counts the events of the countries and subjects shown between the screen's edges; while subjectsLoaded.complete is false the subjects are still being read and the count is not the whole history. goingTo is present while the timeline is still gliding.",
+      "effect": "read"
+    },
+    {
+      "id": "listCountries",
+      "summary": "List the countries (today's states, ended states, territories) with their ids, matching a name if given",
+      "details": "Today's states first, the best covered first. Use the id (a Wikidata Q id) or the exact name with chooseCountries.",
+      "effect": "read",
+      "params": {
+        "query": {
+          "type": "string",
+          "description": "Part of a country's name, in any language (Fra, Deutschland, Japon)",
+          "maxLength": 100
+        },
+        "limit": {
+          "type": "number",
+          "description": "How many to return, 30 when absent",
+          "minimum": 1,
+          "maximum": 400
+        }
+      }
+    },
+    {
+      "id": "search",
+      "summary": "Find events, wars, regimes, rulers and periods by name, as the search box does, and read a year or period in the text",
+      "details": "Up to 10 events (best known first), 4 wars, 4 regimes, 5 rulers and 4 periods. Each result carries an open object: pass its fields as they are to open. A year, a range, a century or a decade in the text (1789, 1914 to 1918, XVe siècle, the 1960s, 44 BC) comes back as when, for goTo.",
+      "effect": "read",
+      "params": {
+        "text": {
+          "type": "string",
+          "description": "A name (French Revolution, Napoléon, Peste noire) or a time, in any of the app's languages",
+          "maxLength": 200
+        }
+      },
+      "required": [
+        "text"
+      ]
+    },
+    {
+      "id": "goTo",
+      "summary": "Move the timeline to a year or a period; it glides there as under the person's hand, and the map follows",
+      "details": "Give one of: when (text: 1789, 1914 to 1918, 15th century, the 1960s, 44 BC, or the name of an event, a war, a regime, a period or a ruler, which goes to its years without opening its card), year, or from + to. A year keeps the zoom (at most 600 years across) unless span says how many years the screen holds (4 to 5635); a period fills the screen. Ends a loop.",
+      "effect": "write",
+      "params": {
+        "when": {
+          "type": "string",
+          "description": "A year or a period as text, or a thing's name as the person says it, in any of the app's languages",
+          "maxLength": 100
+        },
+        "year": {
+          "type": "number",
+          "description": "A year to put under the cursor (negative = BC, no year 0)",
+          "minimum": -3600,
+          "maximum": 2025
+        },
+        "from": {
+          "type": "number",
+          "description": "First year of a period to fill the screen (with to)",
+          "minimum": -3600,
+          "maximum": 2025
+        },
+        "to": {
+          "type": "number",
+          "description": "Last year of that period, included (with from)",
+          "minimum": -3600,
+          "maximum": 2025
+        },
+        "span": {
+          "type": "number",
+          "description": "With a single year: how many years the screen holds (zoom)",
+          "minimum": 4,
+          "maximum": 5635
+        }
+      }
+    },
+    {
+      "id": "chooseCountries",
+      "summary": "Choose the countries on the timeline: add some, remove some, or show only a list",
+      "details": "Each item is a Wikidata id (Q142) or a country's name in any language; a name that could be several countries is refused with their ids. At least one country stays on the timeline. The timeline does not move.",
+      "effect": "write",
+      "params": {
+        "only": {
+          "type": "list",
+          "description": "Show these countries and no others",
+          "maxItems": 40
+        },
+        "add": {
+          "type": "list",
+          "description": "Countries to add to those shown",
+          "maxItems": 40
+        },
+        "remove": {
+          "type": "list",
+          "description": "Countries to take off the timeline",
+          "maxItems": 40
+        }
+      }
+    },
+    {
+      "id": "setLayers",
+      "summary": "Switch what the timeline, the map and the panel show: event subjects, wars, war clouds, rulers, epidemics, religions",
+      "details": "subjects replaces the event subjects shown; they are person, discovery, work, knowledge, building, treaty, disaster, exploration, society, movement, sport, subdivision, election, law, city, company, violence. events false hides every subject, events true gives them all back if none was shown. Religions are read on first use.",
+      "effect": "write",
+      "params": {
+        "subjects": {
+          "type": "list",
+          "description": "The event subjects to show (see details)",
+          "maxItems": 17
+        },
+        "events": {
+          "type": "boolean",
+          "description": "The Events layer on or off"
+        },
+        "wars": {
+          "type": "boolean",
+          "description": "Wars: their spans on the timeline, battles on the map"
+        },
+        "clouds": {
+          "type": "boolean",
+          "description": "The clouds over the battles of a war on the map"
+        },
+        "leaders": {
+          "type": "boolean",
+          "description": "Heads of state and of government, term by term"
+        },
+        "epidemics": {
+          "type": "boolean",
+          "description": "Epidemics"
+        },
+        "religions": {
+          "type": "boolean",
+          "description": "Religions: where they began and spread"
+        }
+      }
+    },
+    {
+      "id": "open",
+      "summary": "Open one event, war, regime, period or ruler by its name or its id: its card shows in the panel and the timeline glides to it",
+      "details": "id is the name as the person says it (« la Révolution française », « Napoléon ») or the id from search. Several things by that name are refused AMBIGUOUS with their names: add type, year or country. An event or a ruler brings its country onto the timeline, as a regime does. A ruler opens on his first term.",
+      "effect": "write",
+      "params": {
+        "id": {
+          "type": "string",
+          "description": "Its name as the person says it, or its id from search",
+          "maxLength": 200
+        },
+        "type": {
+          "type": "string",
+          "description": "What it is, when the name could be several",
+          "enum": [
+            "event",
+            "war",
+            "regime",
+            "period",
+            "leader"
+          ]
+        },
+        "year": {
+          "type": "number",
+          "description": "A year it covers, to tell two of the same name apart",
+          "minimum": -3600,
+          "maximum": 2025
+        },
+        "country": {
+          "type": "string",
+          "description": "Its country, by name or id, to tell two of the same name apart",
+          "maxLength": 100
+        },
+        "office": {
+          "type": "number",
+          "description": "A ruler's office, from search"
+        },
+        "start": {
+          "type": "number",
+          "description": "The first year of a ruler's term, from search"
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    {
+      "id": "close",
+      "summary": "Close the card open in the panel, as its × does",
+      "details": "Answers what was closed, or closed null when no card was open.",
+      "effect": "write"
+    },
+    {
+      "id": "zoom",
+      "summary": "Zoom the timeline in or out around the cursor, or show all of history, as the View menu's buttons do",
+      "details": "direction in or out presses ＋ or － steps times (each about ×0.55 or ×1.8); all shows the whole timeline; or span sets how many years the screen holds. The year under the cursor stays.",
+      "effect": "write",
+      "params": {
+        "direction": {
+          "type": "string",
+          "description": "in, out or all",
+          "enum": [
+            "in",
+            "out",
+            "all"
+          ]
+        },
+        "steps": {
+          "type": "number",
+          "description": "How many presses, 1 when absent",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "span": {
+          "type": "number",
+          "description": "Instead of direction: how many years the screen holds",
+          "minimum": 4,
+          "maximum": 5635
+        }
+      }
+    },
+    {
+      "id": "move",
+      "summary": "Move the cursor forward or back by a number of years (« avance de 50 ans », « recule d'un siècle »)",
+      "details": "Negative goes back in time. The zoom stays; a loop ends.",
+      "effect": "write",
+      "params": {
+        "years": {
+          "type": "number",
+          "description": "Years to move, negative to go back",
+          "minimum": -5635,
+          "maximum": 5635
+        }
+      },
+      "required": [
+        "years"
+      ]
+    },
+    {
+      "id": "meanwhile",
+      "summary": "Say what happened elsewhere the same year: the open event's year, a year given, or the cursor's",
+      "details": "The card's « Meanwhile, elsewhere »: up to 12 events of other countries in the subjects shown, best known first, and the wars under way. Each carries an open object for open. While subjectsLoaded.complete is false the list is not the whole history.",
+      "effect": "read",
+      "params": {
+        "year": {
+          "type": "number",
+          "description": "A year (negative = BC); the open event's year or the cursor's when absent",
+          "minimum": -3600,
+          "maximum": 2025
+        }
+      }
+    },
+    {
+      "id": "setView",
+      "summary": "Show the names in the person's language or each in its own, and the map's borders of today or of the era",
+      "details": "eraBorders true asks the person the first time (the era's borders are downloaded once they accept): the answer then says consentAsked and the borders stay today's. In an exploded board it is refused CONSENT_NEEDED until they accept on the map window.",
+      "effect": "write",
+      "params": {
+        "translatedNames": {
+          "type": "boolean",
+          "description": "true: names in the person's language; false: each in its own"
+        },
+        "eraBorders": {
+          "type": "boolean",
+          "description": "true: the borders of the year on screen; false: today's"
+        }
+      }
+    },
+    {
+      "id": "random",
+      "summary": "Go to a moment drawn at random among the years that have events, then let time run, as the « at random » button does",
+      "effect": "write"
+    },
+    {
+      "id": "play",
+      "summary": "Play or pause time: the timeline runs under the cursor and the map shows each year as it passes",
+      "details": "speed is 1, 5, 20 or 60 years per second. loop plays a period again and again (a year or a period as text, like goTo's when). Play stops by itself at the last year.",
+      "effect": "write",
+      "params": {
+        "playing": {
+          "type": "boolean",
+          "description": "true plays, false pauses"
+        },
+        "speed": {
+          "type": "number",
+          "description": "Years per second: 1, 5, 20 or 60",
+          "minimum": 1,
+          "maximum": 60
+        },
+        "loop": {
+          "type": "string",
+          "description": "A period to repeat while playing (1914 to 1918, the 1960s)",
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "playing"
+      ]
+    }
+  ],
+  "voiceCommands": {
+    "fr": [
+      "montre la Révolution française",
+      "montre la guerre de Cent Ans",
+      "zoome sur la frise",
+      "avance la frise de 50 ans",
+      "montre ce qui se passait ailleurs la même année",
+      "montre-moi un moment au hasard",
+      "ferme la fiche"
+    ],
+    "en": [
+      "show the French Revolution",
+      "show the Hundred Years War",
+      "zoom in on the timeline",
+      "move the timeline 50 years forward",
+      "show what happened elsewhere that year",
+      "show me a random moment",
+      "close the card"
+    ],
+    "es": [
+      "muestra la Revolución francesa",
+      "muestra la guerra de los Cien Años",
+      "haz zoom en la línea de tiempo",
+      "avanza la línea de tiempo 50 años",
+      "muestra qué pasaba en otros lugares ese año",
+      "muéstrame un momento al azar",
+      "cierra la ficha"
+    ]
+  }
 }

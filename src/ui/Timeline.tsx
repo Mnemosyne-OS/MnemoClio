@@ -12,15 +12,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Ev, History, Kind, Leader, Named, Regime, War } from '../data/types';
 import { crossed } from '../data/decode';
-import { Arrivals, rippleProgress, type Ripple } from '../engine/arrival';
-import { placeLabels, rowOf } from '../engine/labels';
-import { layoutLanes, packRows, BAND_H, LEADER_H, type Lane, type LaneSpec } from '../engine/lanes';
+import { Arrivals, rippleProgress, type Ripple } from '@mnemosyne_os/timeline-map/arrival';
+import { placeLabels, rowOf } from '@mnemosyne_os/timeline-map/labels';
+import { layoutLanes, packRows, BAND_H, LEADER_H, type Lane, type LaneSpec } from '@mnemosyne_os/timeline-map/lanes';
 import { KIND_HUE, hsl, kindColor } from '../engine/palette';
-import type { Scene, Picked } from '../engine/scene';
-import { completeTheme, type Theme } from '../engine/theme';
-import { BOUNDS, CENTRE, centreOn, levelOf, panBy, span, tickStep, xToYear, yearToX, zoomAt, type Level, type View } from '../engine/view';
-import { bucketYears, fey, fspan, fy } from '../engine/years';
-import { drawDot } from '../engine/dot';
+import type { Scene } from '@mnemosyne_os/timeline-map/scene';
+import type { Picked } from '../engine/picked';
+import { completeTheme, type Theme } from '@mnemosyne_os/timeline-map/theme';
+import { BOUNDS, CENTRE, centreOn, levelOf, panBy, span, tickStep, xToYear, yearToX, zoomAt, type Level, type View } from '@mnemosyne_os/timeline-map/view';
+import { bucketYears, fey, fspan, fy } from '@mnemosyne_os/timeline-map/years';
+import { drawDot } from '@mnemosyne_os/timeline-map/dot';
 
 const GUTTER = 132;
 const RULER_H = 30;

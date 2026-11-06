@@ -12,7 +12,7 @@
  * Pure: names and words come from the caller (the app's language); nothing here reads the network.
  */
 import type { Country, Ev, History, Named } from './types';
-import { periodOf, fspan, fey } from '../engine/years';
+import { periodOf, fspan, fey } from '@mnemosyne_os/timeline-map/years';
 
 /**
  * The host refuses an ingest above 50 000 BYTES of UTF-8 (`socialHandlers`), not characters: the

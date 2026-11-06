@@ -5,7 +5,7 @@
  * on unmount), wakes with the scene.
  */
 import { useEffect } from 'react';
-import type { Scene } from '../engine/scene';
+import type { Scene } from '@mnemosyne_os/timeline-map/scene';
 
 export function useSceneStepper(scene: Scene, active: boolean): void {
   useEffect(() => {

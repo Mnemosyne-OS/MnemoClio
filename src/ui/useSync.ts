@@ -9,7 +9,7 @@
  * or received. Without it, applying A's choices in B made B send them back, and so on.
  */
 import { useEffect, useRef, useState } from 'react';
-import type { Scene } from '../engine/scene';
+import type { Scene } from '@mnemosyne_os/timeline-map/scene';
 import { inShell } from './host';
 import { broadcastPort, choicesKey, linkWindows, type Choices } from './sync';
 

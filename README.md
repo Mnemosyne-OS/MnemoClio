@@ -10,6 +10,10 @@
 
 The history of every country on one timeline you can move.
 
+[![MnemoClio running on Hugging Face](https://huggingface.co/spaces/Mnemosyne-OS/mnemoclio/resolve/main/thumbnail.png)](https://huggingface.co/spaces/Mnemosyne-OS/mnemoclio)
+
+**[▶ Try it in your browser, on Hugging Face](https://huggingface.co/spaces/Mnemosyne-OS/mnemoclio)**: nothing to install. Inside Mnemosyne OS it also works with your memory.
+
 Drag the timeline to travel through time. The wheel zooms from five centuries down to five
 years. Press play and the cursor runs: what it passes lights up on the timeline and on the
 map, and lands in the feed. Click anything to open its card, with what happened the same

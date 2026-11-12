@@ -36,6 +36,7 @@ year in every other country.
 |---|---|---|
 | Wikidata | CC0 | read by `scripts/wikidata/`, shipped in `public/data/` |
 | Natural Earth (today's borders) | public domain | shipped in `public/data/world-today.json` |
+| Our World in Data population series (HYDE 3.3, Gapminder v7, UN World Population Prospects 2024, World Bank) | CC BY 4.0 (UN: CC BY 3.0 IGO) | read by `scripts/population/`, shipped in `public/data/population.json` |
 | historical-basemaps by A. Ourednik (borders of the time) | GPL-3.0 | **not shipped**: your computer downloads each date from GitHub after you agree |
 
 The date the data was read is printed at the bottom of the window.

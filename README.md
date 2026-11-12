@@ -40,6 +40,8 @@ year in every other country.
 
 The date the data was read is printed at the bottom of the window.
 
+The MIT licence in `LICENSE` covers the code. The data keeps the terms of its sources, listed above.
+
 Some subjects are capped to the best known items, and the window says so. Births, for
 example, are the 6 000 best known of 13 031, meaning people with at least 59 Wikipedia
 articles. A country with few events on the timeline has few on Wikidata, which does not mean
